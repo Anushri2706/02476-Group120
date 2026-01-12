@@ -4,6 +4,7 @@ from PIL import Image
 from torchvision import transforms
 from pathlib import Path
 from typing import Tuple
+from torch.utils.data import Dataset, DataLoader
 
 def process_split(csv_path: Path, root_dir: Path, transform: transforms.Compose) -> Tuple[torch.Tensor, torch.Tensor]:
     """
@@ -87,6 +88,65 @@ def preprocess_gtsrb(raw_dir: str, processed_dir: str) -> None:
         print(f"Saved Train data: {train_data.shape}")
     else:
         print(f"Warning: {train_csv} not found. Skipping Train set.")
+
+
+class GTSRBDataset(Dataset):
+    """
+    A custom dataset that wraps the pre-processed tensors 
+    and applies on-the-fly augmentation.
+    """
+    def __init__(self, images_path, targets_path, transform=None):
+        self.images = torch.load(images_path)
+        self.targets = torch.load(targets_path)
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+        img = self.images[idx]
+        label = self.targets[idx]
+        
+        # Apply augmentations (e.g., RandomRotation) if provided
+        if self.transform:
+            img = self.transform(img)
+            
+        return img, label
+
+def get_loaders(data_dir="data/processed", batch_size=64):
+    """
+    Returns train and test dataloaders.
+    """
+    data_path = Path(data_dir)
+    
+    # 1. Define Augmentations (Train only)
+    # We normalized in preprocessing, but usually we need to re-verify 
+    # if ToTensor() was already applied. 
+    # Since our tensors are already floats 0-1, we just apply geometric changes.
+    train_transform = transforms.Compose([
+        transforms.RandomRotation(10),
+        transforms.RandomAffine(0, translate=(0.1, 0.1)),
+        # Add more here if needed
+    ])
+
+    # 2. Create Datasets
+    train_set = GTSRBDataset(
+        data_path / "train_images.pt", 
+        data_path / "train_targets.pt", 
+        transform=train_transform
+    )
+    
+    test_set = GTSRBDataset(
+        data_path / "test_images.pt", 
+        data_path / "test_targets.pt", 
+        transform=None # No augmentation for test!
+    )
+
+    # 3. Create Loaders
+    train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False)
+    
+    return train_loader, test_loader
 
 if __name__ == "__main__":
     # Adjust these paths if your folder structure is different
