@@ -1,110 +1,93 @@
-from pathlib import Path
-
-import pandas as pd
 import torch
-import typer
+import pandas as pd
 from PIL import Image
-from torch.utils.data import Dataset
 from torchvision import transforms
+from pathlib import Path
+from typing import Tuple
 
-
-class MyDataset(Dataset):
+def process_split(csv_path: Path, root_dir: Path, transform: transforms.Compose) -> Tuple[torch.Tensor, torch.Tensor]:
     """
-    Custom dataset for GTSRB.
+    Reads a GTSRB CSV file, crops/resizes images, and returns tensors.
+    
+    Args:
+        csv_path: Path to the CSV file (Train.csv or Test.csv).
+        root_dir: Root directory containing image folders.
+        transform: Torchvision transforms to apply.
 
-    This class loads preprocessed data saved as .pt files.
+    Returns:
+        A tuple containing (data_tensor, labels_tensor).
     """
+    df = pd.read_csv(csv_path)
+    data = []
+    labels = []
 
-    def __init__(self, data_path: Path, train: bool = True, transform=None) -> None:
-        """
-        Args:
-            data_path (Path): Path to the directory containing processed .pt files.
-            train (bool): Whether to load the training or test set.
-            transform (callable, optional): Optional transform to be applied on a sample for data augmentation.
-        """
-        self.transform = transform
-        split = "train" if train else "test"
-        processed_path = Path(data_path) / f"{split}.pt"
+    # Total rows for progress tracking
+    total = len(df)
+    print(f"Processing {csv_path.name}: {total} images found.")
 
-        if not processed_path.exists():
-            raise FileNotFoundError(
-                f"{processed_path} not found. " "Please run `invoke preprocess-data` first."
-            )
+    for i, row in df.iterrows():
+        # Path manipulation using pathlib
+        img_path = root_dir / row['Path']
+        
+        try:
+            with Image.open(img_path) as img:
+                # Crop using ROI coordinates from CSV
+                # Box format: (left, upper, right, lower)
+                box = (row['Roi.X1'], row['Roi.Y1'], row['Roi.X2'], row['Roi.Y2'])
+                crop = img.crop(box)
+                
+                # Apply transformations (Resize -> ToTensor)
+                tensor = transform(crop)
+                
+                data.append(tensor)
+                labels.append(int(row['ClassId']))
+        
+        except (FileNotFoundError, OSError) as e:
+            print(f"Warning: Could not process image {img_path}. Error: {e}")
 
-        self.images, self.labels = torch.load(processed_path)
+        # Simple progress logger
+        if (i + 1) % 5000 == 0:
+            print(f"  Processed {i + 1}/{total} images...")
 
-        if self.transform:
-            self.pil_transform = transforms.ToPILImage()
-        else:
-            self.pil_transform = None
+    # Stack list of tensors into a single tensor
+    return torch.stack(data), torch.tensor(labels)
 
-    def __len__(self) -> int:
-        """Return the length of the dataset."""
-        return len(self.labels)
-
-    def __getitem__(self, index: int):
-        """Return a given sample from the dataset."""
-        image = self.images[index]
-        label = self.labels[index]
-
-        if self.transform:
-            # Convert tensor to PIL image to apply transformations
-            image = self.pil_transform(image)
-            image = self.transform(image)
-
-        return image, label
-
-    def preprocess(self, output_folder: Path) -> None:
-        """
-        This method is a placeholder. The main preprocessing logic is in the
-        `preprocess` function below.
-        """
-        raise NotImplementedError("Use the `preprocess` function at the module level.")
-
-
-def preprocess(data_path: Path, output_folder: Path) -> None:
+def preprocess_gtsrb(raw_dir: str, processed_dir: str) -> None:
     """
-    Preprocess the raw GTSRB data from `data_path` and save it to `output_folder`.
-    It creates `train.pt` and `test.pt` files containing tensors of images and labels.
+    Main preprocessing pipeline for GTSRB.
+    Checks for Train.csv and Test.csv, processes them, and saves .pt files.
     """
-    print(f"Preprocessing data from {data_path} and saving to {output_folder}")
-    output_folder.mkdir(parents=True, exist_ok=True)
+    raw_path = Path(raw_dir)
+    save_path = Path(processed_dir)
+    save_path.mkdir(parents=True, exist_ok=True)
 
-    preprocess_transform = transforms.Compose([transforms.Resize((32, 32)), transforms.ToTensor()])
+    # Define standard transformations
+    # GTSRB images vary in size; we resize to 32x32 for standard CNNs
+    transform = transforms.Compose([
+        transforms.Resize((64, 64)),
+        transforms.ToTensor(),
+    ])
 
-    # Process training data
-    print("Processing training data...")
-    train_images, train_labels = [], []
-    train_folder = data_path / "Train"
-    if not train_folder.exists():
-        raise FileNotFoundError(f"Training data not found at {train_folder}. Check your data directory.")
-    for class_dir in sorted(train_folder.iterdir()):
-        if class_dir.is_dir():
-            class_id = int(class_dir.name)
-            for img_path in class_dir.glob("*.png"):
-                image = Image.open(img_path).convert("RGB")
-                train_images.append(preprocess_transform(image))
-                train_labels.append(class_id)
+    # --- Process Test Data ---
+    test_csv = raw_path / "Test.csv"
+    if test_csv.exists():
+        test_data, test_labels = process_split(test_csv, raw_path, transform)
+        torch.save(test_data, save_path / "test_images.pt")
+        torch.save(test_labels, save_path / "test_targets.pt")
+        print(f"Saved Test data: {test_data.shape}")
+    else:
+        print(f"Warning: {test_csv} not found. Skipping Test set.")
 
-    torch.save((torch.stack(train_images), torch.tensor(train_labels, dtype=torch.long)), output_folder / "train.pt")
-    print(f"Saved train.pt with {len(train_labels)} images to {output_folder}")
-
-    # Process test data
-    print("Processing test data...")
-    test_images, test_labels = [], []
-    test_csv = data_path / "Test.csv"
-    if not test_csv.exists():
-        raise FileNotFoundError(f"Test metadata not found at {test_csv}. Check your data directory.")
-    df = pd.read_csv(test_csv)
-    for _, row in df.iterrows():
-        img_path = data_path / row["Path"]
-        image = Image.open(img_path).convert("RGB")
-        test_images.append(preprocess_transform(image))
-        test_labels.append(row["ClassId"])
-
-    torch.save((torch.stack(test_images), torch.tensor(test_labels, dtype=torch.long)), output_folder / "test.pt")
-    print(f"Saved test.pt with {len(test_labels)} images to {output_folder}")
-
+    # --- Process Train Data ---
+    train_csv = raw_path / "Train.csv"
+    if train_csv.exists():
+        train_data, train_labels = process_split(train_csv, raw_path, transform)
+        torch.save(train_data, save_path / "train_images.pt")
+        torch.save(train_labels, save_path / "train_targets.pt")
+        print(f"Saved Train data: {train_data.shape}")
+    else:
+        print(f"Warning: {train_csv} not found. Skipping Train set.")
 
 if __name__ == "__main__":
-    typer.run(preprocess)
+    # Adjust these paths if your folder structure is different
+    preprocess_gtsrb("data/raw", "data/processed")
