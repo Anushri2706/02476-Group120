@@ -2,7 +2,7 @@ from mlops.model import Model
 from mlops.data import MyDataset
 
 def train():
-    dataset = MyDataset("data/raw")
+    dataset = MyDataset("data/processed")
     model = Model()
     # add rest of your training code here
 
