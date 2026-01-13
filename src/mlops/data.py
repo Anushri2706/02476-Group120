@@ -4,9 +4,10 @@ import pandas as pd
 import os
 from pathlib import Path
 from PIL import Image
+from sklearn.model_selection import GroupShuffleSplit
 
 class GTSRB(Dataset):
-    def __init__(self, root_dir: str, train: bool = True, transform=None):
+    def __init__(self, root_dir: str, mode: str = "train", transform= None, split = (0.8, 0.2)):
         """
         Args:
             root_dir (str or Path): Path to the directory containing 'Train', 'Test', and 'Test.csv'.
@@ -14,50 +15,70 @@ class GTSRB(Dataset):
                           If False, loads the test set (CSV based).
             transform (callable, optional): Optional transform to be applied on a sample.
         """
+
         self.root_dir = Path(root_dir)
         self.transform = transform
-        self.train = train
+        self.mode = mode
         self.samples = []
+        self.split = split
 
-        if self.train:
+        print("aaaa")
+        if self.mode == "train":
             # --- Training Data Logic (Folder-based) ---
             # Looks for a folder named 'Train' (or 'train')
             # Inside are folders 0, 1, 2... representing classes
             self.data_folder = self.root_dir / "Train"
-            if not self.data_folder.exists():
-                self.data_folder = self.root_dir / "train"
+            df = pd.read_csv(self.root_dir / "Train.csv")
+            df["track_id"] = df["Path"].str.split("/").str[-1].str.split("_").str[1]
+          
+
+            # 1. Initialize the splitter
+            # n_splits=1 means just one train/val pair. test_size=0.2 means 20% val.
+            #! random state hydra
+            gss = GroupShuffleSplit(n_splits=1, test_size=self.split[1], random_state=42)
+
+            # 2. Split
+            # Notice we pass 'groups=df['track_id']'
+            train_idx, val_idx = next(gss.split(X=df, y=df['ClassId'], groups=df['track_id']))
+
+            # 3. Create Dataframes
+            train_df = df.iloc[train_idx]
+            val_df = df.iloc[val_idx]
+            print(f"val shape {val_df.shape}")
+            print(f"train shape {train_df.shape}")
+            # for _, row in df.iterrows():
+            #     img_path
             
-            if not self.data_folder.exists():
-                 raise FileNotFoundError(f"Could not find 'Train' or 'train' folder in {self.root_dir}")
+            
+
 
             # Loop through class folders (0, 1, 2...)
-            for class_id in os.listdir(self.data_folder):
-                class_dir = self.data_folder / class_id
-                if class_dir.is_dir():
-                    try:
-                        label = int(class_id)
-                        # Add every image in this class folder to our list
-                        for img_name in os.listdir(class_dir):
-                            if img_name.lower().endswith(('.png', '.jpg', '.jpeg')):
-                                self.samples.append((class_dir / img_name, label))
-                    except ValueError:
-                        continue # Skip non-integer folders if any
+            #! get label from csv, not dir name
+            # for class_id in os.listdir(self.data_folder):
+            #     class_dir = self.data_folder / class_id
+            #     if class_dir.is_dir():
+            #         try:
+            #             label = int(class_id)
+            #             # Add every image in this class folder to our list
+            #             for img_name in os.listdir(class_dir):
+            #                 if img_name.lower().endswith(('.png', '.jpg', '.jpeg')):
+            #                     self.samples.append((class_dir / img_name, label))
+            #         except ValueError:
+            #             continue # Skip non-integer folders if any
 
-        else:
-            # --- Test Data Logic (CSV-based) ---
-            # Looks for Test.csv in the root
-            csv_path = self.root_dir / "Test.csv"
-            if not csv_path.exists():
-                 raise FileNotFoundError(f"Could not find 'Test.csv' in {self.root_dir}")
+        # else:
+        #     # --- Test Data Logic (CSV-based) ---
+        #     # Looks for Test.csv in the root
+        #     csv_path = self.root_dir / "Test.csv"
             
-            # Read the CSV to get paths and labels
-            df = pd.read_csv(csv_path)
-            
-            for _, row in df.iterrows():
-                # CSV Path example: "Test/00000.png"
-                img_path = self.root_dir / row['Path']
-                label = int(row['ClassId'])
-                self.samples.append((img_path, label))
+        #     # Read the CSV to get paths and labels
+        #     df = pd.read_csv(csv_path)
+
+        #     for _, row in df.iterrows():
+        #         # CSV Path example: "Test/00000.png"
+        #         img_path = self.root_dir / row['Path']
+        #         label = int(row['ClassId'])
+        #         self.samples.append((img_path, label))
 
     def __len__(self):
         return len(self.samples)
@@ -79,38 +100,6 @@ class GTSRB(Dataset):
 
         return image, label
 
-# --- Sanity Check Block ---
 if __name__ == "__main__":
-    # This block only runs if you execute "python src/mlops/data.py"
-    # It allows you to test this specific file in isolation.
-    
-    # Define the path relative to where you run the command (project root)
-    # Update this path if yours is different!
-    TEST_PATH = Path("data/datasets/meowmeowmeowmeowmeow/gtsrb-german-traffic-sign/versions/1")
-    
-    if TEST_PATH.exists():
-        print(f"Testing GTSRB Dataset from: {TEST_PATH}")
-        
-        # Test 1: Training Set
-        print("\n--- Checking Training Set ---")
-        try:
-            train_ds = GTSRB(TEST_PATH, train=True)
-            print(f"✅ Successfully loaded Training Set.")
-            print(f"   Total images: {len(train_ds)}")
-            if len(train_ds) > 0:
-                img, label = train_ds[0]
-                print(f"   Sample 0 - Label: {label}, Image Size: {img.size}")
-        except Exception as e:
-             print(f"❌ Failed to load Training Set: {e}")
-
-        # Test 2: Test Set
-        print("\n--- Checking Test Set ---")
-        try:
-            test_ds = GTSRB(TEST_PATH, train=False)
-            print(f"✅ Successfully loaded Test Set.")
-            print(f"   Total images: {len(test_ds)}")
-        except Exception as e:
-             print(f"❌ Failed to load Test Set: {e}")
-    else:
-        print(f"❌ Path not found: {TEST_PATH}")
-        print("Run this script from the project root or fix the TEST_PATH variable.")
+    path_raw = "data/datasets/meowmeowmeowmeowmeow/gtsrb-german-traffic-sign/versions/1/"
+    obj = GTSRB(path_raw, mode="train", split=(0.8, 0.2))
