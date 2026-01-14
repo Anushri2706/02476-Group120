@@ -21,31 +21,34 @@ class GTSRB(Dataset):
         self.mode = mode
         self.samples = []
         self.split = split
-
-        print("aaaa")
-        if self.mode == "train":
+        df = None
+        if self.mode == "train" or self.mode == "val":
             # --- Training Data Logic (Folder-based) ---
             # Looks for a folder named 'Train' (or 'train')
             # Inside are folders 0, 1, 2... representing classes
             self.data_folder = self.root_dir / "Train"
             df = pd.read_csv(self.root_dir / "Train.csv")
+            #gets track_id from the file name
             df["track_id"] = df["Path"].str.split("/").str[-1].str.split("_").str[1]
-          
-
-            # 1. Initialize the splitter
-            # n_splits=1 means just one train/val pair. test_size=0.2 means 20% val.
             #! random state hydra
             gss = GroupShuffleSplit(n_splits=1, test_size=self.split[1], random_state=42)
-
-            # 2. Split
-            # Notice we pass 'groups=df['track_id']'
             train_idx, val_idx = next(gss.split(X=df, y=df['ClassId'], groups=df['track_id']))
-
-            # 3. Create Dataframes
             train_df = df.iloc[train_idx]
             val_df = df.iloc[val_idx]
-            print(f"val shape {val_df.shape}")
-            print(f"train shape {train_df.shape}")
+        
+            if self.mode == "train":
+                df = train_df
+            elif self.mode == "val":
+                df = val_df
+        elif self.mode == "test":
+                df = pd.read_csv(self.root_dir / "Test.csv")
+
+
+        for _, row in df.iterrows():
+            self.samples.append((self.data_folder / row['Path'], row['ClassId']))
+
+       
+
             # for _, row in df.iterrows():
             #     img_path
             
@@ -99,7 +102,3 @@ class GTSRB(Dataset):
             image = self.transform(image)
 
         return image, label
-
-if __name__ == "__main__":
-    path_raw = "data/datasets/meowmeowmeowmeowmeow/gtsrb-german-traffic-sign/versions/1/"
-    obj = GTSRB(path_raw, mode="train", split=(0.8, 0.2))
