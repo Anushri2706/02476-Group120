@@ -1,9 +1,0 @@
-data:
-  raw_dir: data/raw
-  dataset_name: meowmeowmeowmeowmeow/gtsrb-german-traffic-sign
-  clean_name: gtsrb
-  processed_dir: data/processed
-  force_download: false
-split:
-  test_size: 0.2
-  seed: 42
