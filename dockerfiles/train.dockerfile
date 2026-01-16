@@ -5,6 +5,9 @@ WORKDIR /app
 COPY pyproject.toml uv.lock README.md ./
 COPY src src/
 
-RUN uv sync --frozen
+ENV UV_LINK_MODE=copy
+RUN --mount=type=cache,target=/root/.cache/uv uv sync
 
-ENTRYPOINT ["uv", "run", "src/mlops/train.py"]
+ENV PYTHONPATH=/app
+
+ENTRYPOINT ["uv", "run", "python","src/mlops/train.py"]
