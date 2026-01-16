@@ -1,10 +1,8 @@
-FROM ghcr.io/astral-sh/uv:python3.12-alpine AS base
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm as base 
 
-COPY uv.lock uv.lock
-COPY pyproject.toml pyproject.toml
+WORKDIR /app
 
-RUN uv sync --frozen --no-install-project
-
+COPY pyproject.toml uv.lock README.md ./
 COPY src src/
 
 RUN uv sync --frozen
