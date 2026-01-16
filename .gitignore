@@ -1,0 +1,26 @@
+
+# --- Python & UV ---
+__pycache__/
+*.py[cod]
+.venv/
+.env
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- For Apple Lovers ---
+.DS_Store
+
+# --- Data (Ignore files, keep scripts & structure) ---
+data/*
+!data/*.py
+!data/.gitkeep
+
+# --- Models (Ignore weights, keep code & structure) ---
+models/*
+!models/*.py
+!models/.gitkeep
+
+# --- Reports (Ignore generated figures, keep structure) ---
+reports/figures/*
+!reports/figures/.gitkeep
