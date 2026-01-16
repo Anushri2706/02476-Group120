@@ -1,9 +1,0 @@
-# configs/data/gtsrb.yaml
-
-# Path relative to project root
-raw_dir: "data/raw"
-processed_dir: "data/processed"
-
-# Kaggle/Download specific settings
-dataset_name: "meowmeowmeowmeowmeow/gtsrb-german-traffic-sign"
-clean_name: "gtsrb"
