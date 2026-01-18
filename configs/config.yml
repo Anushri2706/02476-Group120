@@ -1,5 +1,0 @@
-defaults:
-  - model: simple_cnn
-  - data: gtsrb
-  - train: default
-  - _self_
