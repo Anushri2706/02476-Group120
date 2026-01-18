@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 from sklearn.model_selection import GroupShuffleSplit
 import hydra
+import omegaconf
 from omegaconf import DictConfig
 from dotenv import load_dotenv
 import kagglehub
@@ -18,8 +19,8 @@ def download_data(cfg: DictConfig) -> Path:
     """Downloads data using kagglehub and moves it to a clean path."""
     
     # 1. Setup Paths
-    raw_dir = Path(hydra.utils.to_absolute_path(cfg.data.raw_dir))
-    final_path = raw_dir / cfg.data.clean_name
+    rawData_path = Path(hydra.utils.to_absolute_path(cfg.data.raw_dir))
+    final_path = rawData_path / cfg.data.clean_name
     
     # If data already exists, skip download
     if final_path.exists() and (final_path / "Train.csv").exists():
@@ -35,12 +36,12 @@ def download_data(cfg: DictConfig) -> Path:
     # 3. Download (This goes to a temp cache folder by default)
     # We let kagglehub download to its default cache first to ensure integrity
     cache_path = kagglehub.dataset_download(cfg.data.dataset_name)
-    
+    print(f"Kaggle cache path {cache_path}")
     # 4. Move to our clean 'data/raw/gtsrb' location
     log.info(f"Moving data from {cache_path} to {final_path}...")
     
     # Ensure raw_dir exists
-    raw_dir.mkdir(parents=True, exist_ok=True)
+    rawData_path.mkdir(parents=True, exist_ok=True)
     
     # If the clean folder exists but is partial/wrong, remove it first
     if final_path.exists():
@@ -88,18 +89,19 @@ def split_data(data_path: Path, output_dir: Path, cfg: DictConfig):
     train_df.to_csv(train_save_path, index=False)
     val_df.to_csv(val_save_path, index=False)
     
-    # Copy Test.csv as is for convenience
+    # Copy test.csv as is for convenience
     if test_csv_path.exists():
         shutil.copy(test_csv_path, output_dir / "test.csv")
 
     log.info(f"Saved splits to {output_dir}")
     log.info(f"Train: {len(train_df)} | Val: {len(val_df)}")
 
-@hydra.main(config_path="../../../configs", config_name="config", version_base="1.2")
+@hydra.main(config_path="../../../configshydra", config_name="config", version_base="1.2")
 def main(cfg: DictConfig):
     # Ensure processed path is absolute (Hydra changes working dir)
     processed_dir = Path(hydra.utils.to_absolute_path(cfg.data.processed_dir))
     
+    # print(omegaconf.OmegaConf.to_yaml(cfg))
     # 1. Download & Clean Path
     clean_data_path = download_data(cfg)
     
@@ -107,4 +109,11 @@ def main(cfg: DictConfig):
     split_data(clean_data_path, processed_dir, cfg)
 
 if __name__ == "__main__":
+    '''Ensure you have a file on Project Root level '.env'
+        Following this exact format:
+            KAGGLE_USERNAME="<KAGGLE USERNAME>"
+            KAGGLE_KEY="<API KEY>"
+        '''
+
+
     main()
