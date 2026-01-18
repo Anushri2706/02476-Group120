@@ -29,6 +29,8 @@ dependencies = [
     "scikit-learn>=1.8.0",
     "torch==2.3.1",
     "torchvision==0.18.1",
+    "hydra-core>=1.2.0",
+    "python-dotenv>=1.0.0",
 
 ]
 
@@ -51,10 +53,10 @@ dev = [
 # It overrides the default behavior of searching only on PyPI.
 [tool.uv.sources]
 torch = [
-    { index = "pytorch-cuda" },
+    { index = "pytorch-cuda", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
 torchvision = [
-    { index = "pytorch-cuda" },
+    { index = "pytorch-cuda", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
 
 # This defines a custom package index (an array of tables, hence the double brackets).
@@ -69,6 +71,7 @@ explicit = true
 
 [tool.ruff]
 line-length = 120
+lint.select = ["I"]
 
 [tool.coverage.run]
 omit = ["tests/*"]
