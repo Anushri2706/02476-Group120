@@ -1,5 +1,6 @@
 from src.mlops.data import get_loaders
 from torch import nn
+import torch.nn.functional as F
 import torch
 
 
@@ -61,9 +62,8 @@ class Model(nn.Module):
 #         return self.layer(x)
 
 if __name__ == "__main__":
-    model = Model()
-    x = torch.rand(1)
+    # Example of how to use the model
+    model = Model(num_classes=10)
+    # Input shape: (batch_size, channels, height, width)
+    x = torch.rand(1, 3, 64, 64)
     print(f"Output shape of model: {model(x).shape}")
-    train_loader, test_loader = get_loaders(batch_size=64)
-
-

@@ -16,8 +16,8 @@ class GTSRB(Dataset):
             transform (callable, optional): Optional transform to be applied on a sample.
         """
 
-        self.processed_dir = Path(processed_dir)
         self.raw_dir = Path(raw_dir)
+        self.processed_dir = Path(processed_dir)
 
         self.transform = transform
         self.samples = []
