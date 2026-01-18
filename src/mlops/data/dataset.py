@@ -30,9 +30,10 @@ class GTSRB(Dataset):
         elif self.mode == "test":
             csv_path = self.processed_dir / "test.csv"
 
+
         df = pd.read_csv(csv_path)
         self.samples = [
-            (self.raw_dir / p, label) 
+            (self.raw_dir / "gtsrb" / p, label) #! Shame on you Nick
             for p, label in zip(df['Path'], df['ClassId'])
         ]
 
