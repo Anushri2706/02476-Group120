@@ -71,8 +71,8 @@ def split_data(data_path: Path, output_dir: Path, cfg: DictConfig):
     log.info("Splitting data by Track ID...")
     gss = GroupShuffleSplit(
         n_splits=1, 
-        test_size=cfg.split.test_size, 
-        random_state=cfg.split.seed
+        test_size=cfg.data.split.test_size, 
+        random_state=cfg.data.split.seed
     )
     train_idx, val_idx = next(gss.split(X=df, y=df['ClassId'], groups=df['track_id']))
 

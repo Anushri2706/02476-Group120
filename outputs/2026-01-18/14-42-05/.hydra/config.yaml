@@ -1,0 +1,6 @@
+data:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  split: 0.2
+  dataset_name: meowmeowmeowmeowmeow/gtsrb-german-traffic-sign
+  clean_name: gtsrb
