@@ -6,8 +6,9 @@ from pathlib import Path
 from PIL import Image
 from sklearn.model_selection import GroupShuffleSplit
 
+
 class GTSRB(Dataset):
-    def __init__(self, raw_dir: str, processed_dir: str, mode: str = "train", transform= None):
+    def __init__(self, raw_dir: str, processed_dir: str, mode: str = "train", transform=None):
         """
         Args:
             raw_dir (str or Path): Path to the raw images (data/raw/gtsrb)
@@ -33,8 +34,8 @@ class GTSRB(Dataset):
 
         df = pd.read_csv(csv_path)
         self.samples = [
-            (self.raw_dir / "gtsrb" / p, label) #! Shame on you Nick
-            for p, label in zip(df['Path'], df['ClassId'])
+            (self.raw_dir / "gtsrb" / p, label)  #! Shame on you Nick
+            for p, label in zip(df["Path"], df["ClassId"])
         ]
 
     def __len__(self):
@@ -42,7 +43,7 @@ class GTSRB(Dataset):
 
     def __getitem__(self, idx):
         img_path, label = self.samples[idx]
-        
+
         try:
             # open image and convert to RGB (standard for PyTorch)
             image = Image.open(img_path).convert("RGB")
