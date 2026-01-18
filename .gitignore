@@ -4,10 +4,11 @@ __pycache__/
 *.py[cod]
 .venv/
 .env
-
+.hydra/*
+.ipynb_checkpoints/
 # --- Jupyter ---
 .ipynb_checkpoints/
-
+outputs/*
 # --- For Apple Lovers ---
 .DS_Store
 
