@@ -7,6 +7,8 @@ import torch
 # Assuming your GTSRB class is in a file named `dataset.py`
 from .data.dataset import GTSRB
 
+# Assuming your GTSRB class is in a file named `dataset.py`
+from .data.dataset import GTSRB 
 
 @hydra.main(config_path="../../configshydra", config_name="config")
 def main(cfg: DictConfig):
