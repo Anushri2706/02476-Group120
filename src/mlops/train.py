@@ -40,11 +40,11 @@ def main(cfg: DictConfig):
     )
 
     # 3. Create DataLoaders
-    train_loader = DataLoader(train_ds, batch_size=32, shuffle=True, num_workers=4, pin_memory=True)
+    train_loader = DataLoader(train_ds, batch_size=cfg.training.batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
-    val_loader = DataLoader(val_ds, batch_size=32, shuffle=False, num_workers=4, pin_memory=True)
+    val_loader = DataLoader(val_ds, batch_size=cfg.training.batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
-    test_loader = DataLoader(test_ds, batch_size=32, shuffle=False, num_workers=4, pin_memory=True)
+    test_loader = DataLoader(test_ds, batch_size=cfg.training.batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
     # --- Verification (Optional) ---
     print(f"Train Dataset size: {len(train_ds)}")
@@ -57,11 +57,11 @@ def main(cfg: DictConfig):
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    model = TinyCNN(num_classes=43)
+    model = TinyCNN(num_classes=cfg.data.num_classes).to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=1e-4)
+    optimizer = optim.Adam(model.parameters(), lr=cfg.training.lr)
 
-    epochs = 3
+    epochs = cfg.training.epochs
     for epoch in range(epochs):
         model.train()
 

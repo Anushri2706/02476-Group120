@@ -9,3 +9,4 @@ split:
 # Kaggle/Download specific settings
 dataset_name: "meowmeowmeowmeowmeow/gtsrb-german-traffic-sign"
 clean_name: "gtsrb"
+num_classes: 43
