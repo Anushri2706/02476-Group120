@@ -94,6 +94,9 @@ def main(cfg: DictConfig):
                 img, labels = img.to(device), labels.to(device) 
                 outputs = model(img)
                 pred = outputs.argmax(dim=1, keepdim=True)  # Get predicted class
+                #Below:
+                # reshapes predictions to labels (using view_as), 
+                #sums up all the 1s which is when they are equal and turns the number which is a tensor into a single item
                 correct += pred.eq(labels.view_as(pred)).sum().item()
                 val_loss += criterion(outputs,labels).item()
             val_loss /= len(val_loader)
