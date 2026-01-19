@@ -31,7 +31,8 @@ dependencies = [
     "torchvision==0.18.1",
     "hydra-core>=1.2.0",
     "python-dotenv>=1.0.0",
-
+    "dvc>=3.66.1",
+    "dvc-gdrive>=3.0.1",
 ]
 
 # Optional dependency groups. The 'dev' group includes tools for development
