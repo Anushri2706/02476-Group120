@@ -31,7 +31,7 @@ dependencies = [
     "torchvision==0.18.1",
     "hydra-core>=1.2.0",
     "python-dotenv>=1.0.0",
-
+    "torchmetrics>=1.8.2",
 ]
 
 # Optional dependency groups. The 'dev' group includes tools for development

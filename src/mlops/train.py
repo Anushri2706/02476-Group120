@@ -7,6 +7,9 @@ import torch.optim as optim
 import torch.nn as nn
 import logging
 import os
+from torchmetrics.classification import MulticlassAccuracy
+from torchmetrics import MeanMetric
+
 
 # Assuming your GTSRB class is in a file named `dataset.py`
 from .data.dataset import GTSRB
@@ -54,7 +57,6 @@ def main(cfg: DictConfig):
 
     val_loader = DataLoader(val_ds, batch_size=cfg.training.batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
-    test_loader = DataLoader(test_ds, batch_size=cfg.training.batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
     # --- Verification (Optional) ---
     log.info(f"Train Dataset size: {len(train_ds)}")
@@ -75,9 +77,14 @@ def main(cfg: DictConfig):
     epochs = cfg.training.epochs
     best_val_loss = None
 
+    num_classes = cfg.data.num_classes
+    train_acc_metric = MulticlassAccuracy(num_classes=num_classes, average='micro').to(device)
+    val_acc_metric = MulticlassAccuracy(num_classes=num_classes, average='micro').to(device)
+    train_loss_metric = MeanMetric().to(device)
+    val_loss_metric = MeanMetric().to(device)
+
     for epoch in range(epochs):
         model.train()
-
         for img, labels in train_loader:
             img, labels = img.to(device), labels.to(device)
             optimizer.zero_grad()
@@ -85,37 +92,50 @@ def main(cfg: DictConfig):
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
+            train_loss_metric.update(loss)
+            train_acc_metric.update(outputs, labels)
 
         model.eval()
-        val_loss = 0.0
-        correct = 0
+
         with torch.no_grad():
             for img, labels in val_loader:
                 img, labels = img.to(device), labels.to(device) 
                 outputs = model(img)
-                pred = outputs.argmax(dim=1, keepdim=True)  # Get predicted class
-                #Below:
-                # reshapes predictions to labels (using view_as), 
-                #sums up all the 1s which is when they are equal and turns the number which is a tensor into a single item
-                correct += pred.eq(labels.view_as(pred)).sum().item()
-                val_loss += criterion(outputs,labels).item()
-            val_loss /= len(val_loader)
-            log.info('\nEpoch: {}, Train Loss: {:.4f}, Test Loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        epoch, loss.item(),val_loss, correct, len(test_loader.dataset),
-        100. * correct / len(test_loader.dataset)))
-        if not best_val_loss:
-            best_val_loss= val_loss
-        if val_loss <= best_val_loss:
-            best_val_loss = val_loss
-            #save to outputs
-            save_path = os.path.join(output_dir, 'best_model.pt')
-            torch.save(model, save_path)
-            log.info(f"Model saved to {save_path}")
-    #save the best model
-    best_model = output_dir / "best_model.pt"
-    model = torch.load(best_model)
-    save_path = os.path.join(model_dir,"latest", "best_model.pt")
-    torch.save(model, save_path)
+                val_loss_metric.update(criterion(outputs, labels))
+                val_acc_metric.update(outputs, labels)
+
+        epoch_train_loss = train_loss_metric.compute()
+        epoch_train_acc = train_acc_metric.compute()
+        epoch_val_loss = val_loss_metric.compute()
+        epoch_val_acc = val_acc_metric.compute()
+
+        log.info(f'Epoch: {epoch} | '
+                f'Train Loss: {epoch_train_loss:.4f} Acc: {epoch_train_acc:.2%} | '
+                f'Val Loss: {epoch_val_loss:.4f} Acc: {epoch_val_acc:.2%}')
+
+        # Reset metrics for the next epoch
+        train_loss_metric.reset()
+        train_acc_metric.reset()
+        val_loss_metric.reset()
+        val_acc_metric.reset()
+
+        if best_val_loss is None or epoch_val_loss <= best_val_loss:
+            best_val_loss = epoch_val_loss
+            checkpoint = {
+                'epoch': epoch,
+                'state_dict': model.state_dict(),
+                'config': cfg, 
+                'metric': best_val_loss
+            }
+    
+    best_model_path = os.path.join(output_dir, "best_model.pth")
+    latest_dir = os.path.join(model_dir, "latest")
+    os.makedirs(latest_dir, exist_ok=True)
+    latest_save_path = os.path.join(latest_dir, "best_model.pth")
+    # Load the checkpoint dict
+    checkpoint = torch.load(best_model_path)
+    # Save the checkpoint dict (preserves config)
+    torch.save(checkpoint, latest_save_path)
         
 if __name__ == "__main__":
     main()
