@@ -76,5 +76,31 @@ def main(cfg: DictConfig):
         print(f"Epoch {epoch+1}: loss = {loss.item():.4f}")
 
 
+
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    model = TinyCNN(num_classes= 43)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=1e-4)
+
+
+
+    epochs = 1
+    for epoch in range(epochs):
+        model.train()
+
+        for img, labels in train_loader:
+            img, labels = img.to(device), labels.to(device)
+            optimizer.zero_grad()
+            outputs = model(img)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+
+        print(f"Epoch {epoch+1}: loss = {loss.item():.4f}")
+
+
+
+
 if __name__ == "__main__":
     main()
