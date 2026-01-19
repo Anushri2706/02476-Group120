@@ -69,10 +69,12 @@ def main(cfg: DictConfig):
 
     model = TinyCNN(num_classes=cfg.data.num_classes).to(device)
     criterion = nn.CrossEntropyLoss()
+    #! learning rate scheduler
     optimizer = optim.Adam(model.parameters(), lr=cfg.training.lr)
 
     epochs = cfg.training.epochs
     best_val_loss = None
+
     for epoch in range(epochs):
         model.train()
 
@@ -105,11 +107,12 @@ def main(cfg: DictConfig):
             #save to outputs
             save_path = os.path.join(output_dir, 'best_model.pt')
             torch.save(model, save_path)
-            #save to models/output
-            save_path = os.path.join(model_dir, output_dir, "best_model.pt")
-            torch.save(model, save_path)
             log.info(f"Model saved to {save_path}")
-            log.info(f"Model saved to {output_dir}")
+    #save the best model
+    best_model = output_dir / "best_model.pt"
+    model = torch.load(best_model)
+    save_path = os.path.join(model_dir,"latest", "best_model.pt")
+    torch.save(model, save_path)
         
 if __name__ == "__main__":
     main()
