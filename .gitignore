@@ -26,3 +26,4 @@ models/*
 reports/figures/*
 !reports/figures/.gitkeep
 /data
+/dataset/*
