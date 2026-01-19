@@ -10,6 +10,7 @@ import torch.nn as nn
 from .data.dataset import GTSRB
 from .model import TinyCNN
 
+
 @hydra.main(config_path="../../configshydra", config_name="config")
 def main(cfg: DictConfig):
     # 1. Define Transforms
@@ -54,17 +55,13 @@ def main(cfg: DictConfig):
     print(f"Batch Image Shape: {images.shape}")  # Should be [32, 3, 32, 32]
     print(f"Batch Label Shape: {labels.shape}")
 
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
-
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-    model = TinyCNN(num_classes= 43)
+    model = TinyCNN(num_classes=43)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
-
-
-    epochs = 1
+    epochs = 3
     for epoch in range(epochs):
         model.train()
 
@@ -77,8 +74,6 @@ def main(cfg: DictConfig):
             optimizer.step()
 
         print(f"Epoch {epoch+1}: loss = {loss.item():.4f}")
-
-
 
 
 if __name__ == "__main__":
