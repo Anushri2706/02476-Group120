@@ -2,3 +2,5 @@ defaults:
   - _self_
   - data: gtsrb
   - training: trainConf
+paths: 
+  models: "models"

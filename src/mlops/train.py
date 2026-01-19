@@ -6,6 +6,7 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 import logging
+import os
 
 # Assuming your GTSRB class is in a file named `dataset.py`
 from .data.dataset import GTSRB
@@ -14,8 +15,12 @@ from .model import TinyCNN
 # Initialize logger
 log = logging.getLogger(__name__)
 
-@hydra.main(config_path="../../configshydra", config_name="config")
+@hydra.main(config_path="../../configshydra", config_name="config", version_base="1.2")
 def main(cfg: DictConfig):
+    #models dir
+    model_dir = hydra.utils.to_absolute_path(cfg.paths.models)
+
+    output_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
     # 1. Define Transforms
     # We must resize images to the same size so they can be stacked into a batch tensor.
     transform = transforms.Compose([transforms.Resize((64, 64)), transforms.ToTensor()])
@@ -67,6 +72,7 @@ def main(cfg: DictConfig):
     optimizer = optim.Adam(model.parameters(), lr=cfg.training.lr)
 
     epochs = cfg.training.epochs
+    best_val_loss = None
     for epoch in range(epochs):
         model.train()
 
@@ -78,8 +84,32 @@ def main(cfg: DictConfig):
             loss.backward()
             optimizer.step()
 
-        log.info(f"Epoch {epoch+1}: loss = {loss.item():.4f}")
-
-
+        model.eval()
+        val_loss = 0.0
+        correct = 0
+        with torch.no_grad():
+            for img, labels in val_loader:
+                img, labels = img.to(device), labels.to(device) 
+                outputs = model(img)
+                pred = outputs.argmax(dim=1, keepdim=True)  # Get predicted class
+                correct += pred.eq(labels.view_as(pred)).sum().item()
+                val_loss += criterion(outputs,labels).item()
+            val_loss /= len(val_loader)
+            log.info('\nEpoch: {}, Train Loss: {:.4f}, Test Loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+        epoch, loss.item(),val_loss, correct, len(test_loader.dataset),
+        100. * correct / len(test_loader.dataset)))
+        if not best_val_loss:
+            best_val_loss= val_loss
+        if val_loss <= best_val_loss:
+            best_val_loss = val_loss
+            #save to outputs
+            save_path = os.path.join(output_dir, 'best_model.pt')
+            torch.save(model, save_path)
+            #save to models/output
+            save_path = os.path.join(model_dir, output_dir, "best_model.pt")
+            torch.save(model, save_path)
+            log.info(f"Model saved to {save_path}")
+            log.info(f"Model saved to {output_dir}")
+        
 if __name__ == "__main__":
     main()
