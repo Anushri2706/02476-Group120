@@ -10,6 +10,7 @@ import torch.nn as nn
 from .data.dataset import GTSRB
 from .model import TinyCNN
 
+
 @hydra.main(config_path="../../configshydra", config_name="config")
 def main(cfg: DictConfig):
     # 1. Define Transforms
@@ -39,11 +40,11 @@ def main(cfg: DictConfig):
     )
 
     # 3. Create DataLoaders
-    train_loader = DataLoader(train_ds, batch_size=32, shuffle=True, num_workers=4, pin_memory=True)
+    train_loader = DataLoader(train_ds, batch_size=cfg.training.batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
-    val_loader = DataLoader(val_ds, batch_size=32, shuffle=False, num_workers=4, pin_memory=True)
+    val_loader = DataLoader(val_ds, batch_size=cfg.training.batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
-    test_loader = DataLoader(test_ds, batch_size=32, shuffle=False, num_workers=4, pin_memory=True)
+    test_loader = DataLoader(test_ds, batch_size=cfg.training.batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
     # --- Verification (Optional) ---
     print(f"Train Dataset size: {len(train_ds)}")
@@ -53,6 +54,26 @@ def main(cfg: DictConfig):
     images, labels = next(iter(train_loader))
     print(f"Batch Image Shape: {images.shape}")  # Should be [32, 3, 32, 32]
     print(f"Batch Label Shape: {labels.shape}")
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    model = TinyCNN(num_classes=cfg.data.num_classes).to(device)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=cfg.training.lr)
+
+    epochs = cfg.training.epochs
+    for epoch in range(epochs):
+        model.train()
+
+        for img, labels in train_loader:
+            img, labels = img.to(device), labels.to(device)
+            optimizer.zero_grad()
+            outputs = model(img)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+
+        print(f"Epoch {epoch+1}: loss = {loss.item():.4f}")
 
 
 
