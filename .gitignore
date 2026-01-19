@@ -27,3 +27,8 @@ reports/figures/*
 !reports/figures/.gitkeep
 /data
 /dataset/*
+
+.dvc/config.local
+.dvc/tmp
+.dvc/cache/files/md5/*
+.dvc/cache/*
