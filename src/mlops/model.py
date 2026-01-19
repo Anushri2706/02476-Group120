@@ -1,12 +1,11 @@
-from src.mlops.data import get_loaders
 from torch import nn
 import torch.nn.functional as F
 import torch
 
 
-class Model(nn.Module):
+class TinyCNN(nn.Module):
     def __init__(self, num_classes):
-        super(Model, self).__init__()
+        super(TinyCNN, self).__init__()
         
         # --- Block 1 ---
         # Input: (Batch_Size, 3, 64, 64)
@@ -63,7 +62,7 @@ class Model(nn.Module):
 
 if __name__ == "__main__":
     # Example of how to use the model
-    model = Model(num_classes=10)
+    model = CNN(num_classes=10)
     # Input shape: (batch_size, channels, height, width)
     x = torch.rand(1, 3, 64, 64)
     print(f"Output shape of model: {model(x).shape}")
