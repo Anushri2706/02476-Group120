@@ -1,4 +1,7 @@
 [core]
-    remote = storage
+    remote = remote_storage
 ['remote "storage"']
     url = gdrive://1EFHvRGhDvBudms57-DobQI30PvAt_Ayh
+['remote "remote_storage"']
+    url = gs://traffic_sign_data/
+    version_aware = true
