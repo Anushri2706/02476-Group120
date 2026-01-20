@@ -14,6 +14,11 @@ from .model import TinyCNN
 # Initialize logger
 log = logging.getLogger(__name__)
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+)
+
 @hydra.main(config_path="../../configshydra", config_name="config")
 def main(cfg: DictConfig):
     # 1. Define Transforms
