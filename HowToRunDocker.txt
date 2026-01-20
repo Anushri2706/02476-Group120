@@ -1,0 +1,12 @@
+To build the image: 
+docker build --platform linux/amd64 -f dockerfiles/train.dockerfile -t train:latest .
+OR 
+docker build -f dockerfiles/train.dockerfile -t train:latest .
+
+To run the container in interactive mode: 
+docker run -it --name <name> train:latest bash
+
+Run the inv commands inside the container preceeded by uv run:
+uv run inv preprocess-data
+uv run inv train 
+etc. 

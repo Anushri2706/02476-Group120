@@ -31,6 +31,8 @@ dependencies = [
     "torchvision==0.18.1",
     "hydra-core>=1.2.0",
     "python-dotenv>=1.0.0",
+    "dvc>=3.66.1",
+    "dvc-gdrive>=3.0.1",
     "torchmetrics>=1.8.2",
     "matplotlib>=3.10.8",
     "seaborn>=0.13.2",
