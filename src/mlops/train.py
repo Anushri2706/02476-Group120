@@ -26,7 +26,9 @@ def main(cfg: DictConfig):
     output_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
     # 1. Define Transforms
     # We must resize images to the same size so they can be stacked into a batch tensor.
-    transform = transforms.Compose([transforms.Resize((64, 64)), transforms.ToTensor()])
+    #make image size configurable
+    image_size = tuple(cfg.image_size)
+    transform = transforms.Compose([transforms.Resize(image_size), transforms.ToTensor()])
 
     # 2. Initialize Datasets using paths from Hydra config
     train_ds = GTSRB(

@@ -22,8 +22,8 @@ def evaluate(cfg: DictConfig):
     model = TinyCNN(num_classes=saved_cfg.data.num_classes).to(device)
     model.load_state_dict(checkpoint['state_dict'])
     model.eval()
-
-    transform = transforms.Compose([transforms.Resize((64, 64)), transforms.ToTensor()])
+    image_size = tuple(saved_cfg.image_size)
+    transform = transforms.Compose([transforms.Resize(image_size), transforms.ToTensor()])
     test_ds = GTSRB(
         raw_dir=hydra.utils.to_absolute_path(cfg.data.raw_dir),
         processed_dir=hydra.utils.to_absolute_path(cfg.data.processed_dir),

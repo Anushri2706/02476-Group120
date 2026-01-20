@@ -26,8 +26,9 @@ def visualize(cfg: DictConfig):
     model.load_state_dict(checkpoint['state_dict'])
     model.eval()
 
-    #! resize should be hydraconfigurable
-    transform = transforms.Compose([transforms.Resize((64, 64)), transforms.ToTensor()])
+    #load image size from the saved config
+    image_size = tuple(saved_cfg.image_size)
+    transform = transforms.Compose([transforms.Resize(image_size), transforms.ToTensor()])
     test_ds = GTSRB(
         raw_dir=hydra.utils.to_absolute_path(cfg.data.raw_dir),
         processed_dir=hydra.utils.to_absolute_path(cfg.data.processed_dir),
