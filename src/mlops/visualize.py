@@ -9,8 +9,8 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchmetrics.classification import MulticlassConfusionMatrix
 
-from data.dataset import GTSRB
-from model import TinyCNN
+from .data.dataset import GTSRB
+from .model import TinyCNN
 
 @hydra.main(config_path="../../configshydra", config_name="config", version_base="1.2")
 def visualize(cfg: DictConfig):

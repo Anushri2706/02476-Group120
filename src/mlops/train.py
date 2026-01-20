@@ -45,14 +45,6 @@ def main(cfg: DictConfig):
         transform=transform,
     )
 
-    test_ds = GTSRB(
-        raw_dir=hydra.utils.to_absolute_path(cfg.data.raw_dir),
-        processed_dir=hydra.utils.to_absolute_path(cfg.data.processed_dir),
-        mode="test",
-        transform=transform,
-    )
-
-    # 3. Create DataLoaders
     train_loader = DataLoader(
         train_ds, batch_size=cfg.training.batch_size, shuffle=True, num_workers=4, pin_memory=True
     )
