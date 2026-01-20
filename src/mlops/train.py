@@ -12,8 +12,8 @@ from torchmetrics import MeanMetric
 
 
 # Assuming your GTSRB class is in a file named `dataset.py`
-from mlops.data.dataset import GTSRB
-from mlops.model import TinyCNN
+from .data.dataset import GTSRB
+from .model import TinyCNN
 
 # Initialize logger
 log = logging.getLogger(__name__)
