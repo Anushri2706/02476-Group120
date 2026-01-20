@@ -6,7 +6,6 @@ COPY pyproject.toml uv.lock README.md ./
 COPY src src/
 COPY tasks.py . 
 COPY configshydra configshydra/
-COPY data data/
 
 ENV UV_LINK_MODE=copy
 RUN --mount=type=cache,target=/root/.cache/uv uv sync
