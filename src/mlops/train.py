@@ -73,6 +73,11 @@ def main(cfg: DictConfig):
     optimizer = optim.Adam(model.parameters(), lr=cfg.training.lr)
     epochs = cfg.training.epochs
     best_val_loss = None
+    
+    log.info(f"Starting training for {epochs} epochs on device: {device}")
+    log.info(f"Model: {model.__class__.__name__}")
+    log.info(f"Optimizer: {optimizer.__class__.__name__} (lr={cfg.training.lr})")
+    log.info(f"Batch size: {cfg.training.batch_size}")
 
     num_classes = cfg.data.num_classes
     train_acc_metric = MulticlassAccuracy(num_classes=num_classes, average='micro').to(device)
@@ -82,7 +87,10 @@ def main(cfg: DictConfig):
 
     for epoch in range(epochs):
         model.train()
-        for img, labels in train_loader:
+        log.info(f"Starting Epoch {epoch + 1}/{epochs}")
+        
+        total_batches = len(train_loader)
+        for batch_idx, (img, labels) in enumerate(train_loader, 1):
             img, labels = img.to(device), labels.to(device)
             optimizer.zero_grad()
             outputs = model(img)
@@ -91,7 +99,14 @@ def main(cfg: DictConfig):
             optimizer.step()
             train_loss_metric.update(loss)
             train_acc_metric.update(outputs, labels)
+            
+            # Log progress every 10% of batches or every 50 batches
+            if batch_idx % max(1, total_batches // 10) == 0 or batch_idx % 50 == 0:
+                log.info(f"  Epoch {epoch + 1}/{epochs} - Batch {batch_idx}/{total_batches} "
+                        f"({100 * batch_idx / total_batches:.1f}%) - "
+                        f"Loss: {loss.item():.4f}")
 
+        log.info(f"Starting validation for Epoch {epoch + 1}/{epochs}")
         model.eval()
 
         with torch.no_grad():
@@ -106,9 +121,11 @@ def main(cfg: DictConfig):
         epoch_val_loss = val_loss_metric.compute()
         epoch_val_acc = val_acc_metric.compute()
 
-        log.info(f'Epoch: {epoch} | '
-                f'Train Loss: {epoch_train_loss:.4f} Acc: {epoch_train_acc:.2%} | '
-                f'Val Loss: {epoch_val_loss:.4f} Acc: {epoch_val_acc:.2%}')
+        log.info(f"=" * 80)
+        log.info(f'Epoch {epoch + 1}/{epochs} Complete:')
+        log.info(f'  Train Loss: {epoch_train_loss:.4f} | Train Acc: {epoch_train_acc:.2%}')
+        log.info(f'  Val Loss:   {epoch_val_loss:.4f} | Val Acc:   {epoch_val_acc:.2%}')
+        log.info(f"=" * 80)
 
         # Reset metrics for the next epoch
         train_loss_metric.reset()
@@ -118,6 +135,7 @@ def main(cfg: DictConfig):
 
         if best_val_loss is None or epoch_val_loss <= best_val_loss:
             best_val_loss = epoch_val_loss
+            log.info(f"✓ New best model saved! Val Loss: {best_val_loss:.4f}")
             #save with additional info because we may change the architecture of the model at 
             #some point and to open this this model we need to intialize the model as it was saved.
             checkpoint = {
@@ -127,6 +145,12 @@ def main(cfg: DictConfig):
                 'metric': best_val_loss
             }
             torch.save(checkpoint, os.path.join(output_dir, "best_model.pth"))
+    
+    log.info(f"\n{'='*80}")
+    log.info(f"Training Complete!")
+    log.info(f"Best Validation Loss: {best_val_loss:.4f}")
+    log.info(f"{'='*80}\n")
+    
     #saves after training to 'models/latest' helpful for now but we could eliminate it later
     best_model_path = os.path.join(output_dir, "best_model.pth")
     latest_dir = os.path.join(model_dir, "latest")
