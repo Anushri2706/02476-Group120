@@ -8,8 +8,8 @@ import torch.nn as nn
 import logging
 
 # Assuming your GTSRB class is in a file named `dataset.py`
-from .data.dataset import GTSRB
-from .model import TinyCNN
+from mlops.data.dataset import GTSRB
+from mlops.model import TinyCNN
 
 # Initialize logger
 log = logging.getLogger(__name__)
