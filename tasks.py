@@ -74,3 +74,13 @@ def evaluate(ctx: Context) -> None:
 def visualize(ctx: Context) -> None:
     """Visualize model performance."""
     ctx.run(f"uv run python -m {PROJECT_NAME}.visualize", echo=True, pty=not WINDOWS)
+
+@task
+def api(ctx: Context) -> None:
+    """Run the FastAPI application locally."""
+    # We point uvicorn to 'src.mlops.api:app' to avoid import errors
+    ctx.run(
+        f"uv run uvicorn src.{PROJECT_NAME}.api:app --reload --port 8000", 
+        echo=True, 
+        pty=not WINDOWS
+    )
