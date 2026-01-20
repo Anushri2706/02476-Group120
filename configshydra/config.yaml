@@ -4,3 +4,5 @@ defaults:
   - training: trainConf
 paths: 
   models: "models"
+ckpt_path: "models/latest/best_model.pth"
+figures_path: "reports/figures"

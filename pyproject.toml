@@ -32,6 +32,8 @@ dependencies = [
     "hydra-core>=1.2.0",
     "python-dotenv>=1.0.0",
     "torchmetrics>=1.8.2",
+    "matplotlib>=3.10.8",
+    "seaborn>=0.13.2",
 ]
 
 # Optional dependency groups. The 'dev' group includes tools for development

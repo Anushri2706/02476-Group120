@@ -71,9 +71,7 @@ def main(cfg: DictConfig):
 
     model = TinyCNN(num_classes=cfg.data.num_classes).to(device)
     criterion = nn.CrossEntropyLoss()
-    #! learning rate scheduler
     optimizer = optim.Adam(model.parameters(), lr=cfg.training.lr)
-
     epochs = cfg.training.epochs
     best_val_loss = None
 
@@ -121,13 +119,16 @@ def main(cfg: DictConfig):
 
         if best_val_loss is None or epoch_val_loss <= best_val_loss:
             best_val_loss = epoch_val_loss
+            #save with additional info because we may change the architecture of the model at 
+            #some point and to open this this model we need to intialize the model as it was saved.
             checkpoint = {
                 'epoch': epoch,
                 'state_dict': model.state_dict(),
                 'config': cfg, 
                 'metric': best_val_loss
             }
-    
+            torch.save(checkpoint, os.path.join(output_dir, "best_model.pth"))
+    #saves after training to 'models/latest' helpful for now but we could eliminate it later
     best_model_path = os.path.join(output_dir, "best_model.pth")
     latest_dir = os.path.join(model_dir, "latest")
     os.makedirs(latest_dir, exist_ok=True)
