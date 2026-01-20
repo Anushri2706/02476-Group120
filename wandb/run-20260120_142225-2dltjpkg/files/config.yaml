@@ -1,0 +1,85 @@
+_wandb:
+    value:
+        cli_version: 0.24.0
+        e:
+            owwmdnutci7lb0ef2z7rm2jj28f7k5cx:
+                apple:
+                    ecpuCores: 4
+                    gpuCores: 7
+                    memoryGb: 8
+                    name: Apple M1
+                    pcpuCores: 4
+                    ramTotalBytes: "8589934592"
+                    swapTotalBytes: "7516192768"
+                cpu_count: 8
+                cpu_count_logical: 8
+                disk:
+                    /:
+                        total: "245107195904"
+                        used: "215105220608"
+                email: s215196@dtu.dk
+                executable: /Users/nicholaskryger/code/ML_OPS/02476-Group120/.venv/bin/python3
+                git:
+                    commit: 13902102303410536e653048423cc48a17ef3ccc
+                    remote: git@github.com:Anushri2706/02476-Group120.git
+                host: macbookair.students.clients.local
+                memory:
+                    total: "8589934592"
+                os: macOS-15.2-arm64-arm-64bit
+                program: -m mlops.train
+                python: CPython 3.12.12
+                root: /Users/nicholaskryger/code/ML_OPS/02476-Group120
+                startedAt: "2026-01-20T13:22:25.151177Z"
+                writerId: owwmdnutci7lb0ef2z7rm2jj28f7k5cx
+        m: []
+        python_version: 3.12.12
+        t:
+            "1":
+                - 1
+                - 5
+                - 41
+                - 50
+                - 53
+            "2":
+                - 1
+                - 5
+                - 41
+                - 50
+                - 53
+            "3":
+                - 2
+                - 16
+            "4": 3.12.12
+            "5": 0.24.0
+            "12": 0.24.0
+            "13": darwin-arm64
+ckpt_path:
+    value: outputs/2026-01-20/11-34-20/best_model.pth
+data:
+    value:
+        clean_name: gtsrb
+        dataset_name: meowmeowmeowmeowmeow/gtsrb-german-traffic-sign
+        num_classes: 43
+        processed_dir: data/processed
+        raw_dir: data/raw
+        split:
+            seed: 41
+            test_size: 0.2
+figures_path:
+    value: reports/figures
+image_size:
+    value:
+        - 64
+        - 64
+paths:
+    value:
+        models: models
+training:
+    value:
+        batch_size: 16
+        epochs: 7
+        lr: 0.0001
+wandb:
+    value:
+        project_name: gtsrb_classification
+        team_name: 5m

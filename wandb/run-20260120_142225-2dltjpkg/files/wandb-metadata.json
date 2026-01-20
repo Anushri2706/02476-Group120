@@ -1,0 +1,35 @@
+{
+  "os": "macOS-15.2-arm64-arm-64bit",
+  "python": "CPython 3.12.12",
+  "startedAt": "2026-01-20T13:22:25.151177Z",
+  "program": "-m mlops.train",
+  "git": {
+    "remote": "git@github.com:Anushri2706/02476-Group120.git",
+    "commit": "13902102303410536e653048423cc48a17ef3ccc"
+  },
+  "email": "s215196@dtu.dk",
+  "root": "/Users/nicholaskryger/code/ML_OPS/02476-Group120",
+  "host": "macbookair.students.clients.local",
+  "executable": "/Users/nicholaskryger/code/ML_OPS/02476-Group120/.venv/bin/python3",
+  "cpu_count": 8,
+  "cpu_count_logical": 8,
+  "disk": {
+    "/": {
+      "total": "245107195904",
+      "used": "215105220608"
+    }
+  },
+  "memory": {
+    "total": "8589934592"
+  },
+  "apple": {
+    "name": "Apple M1",
+    "ecpuCores": 4,
+    "pcpuCores": 4,
+    "gpuCores": 7,
+    "memoryGb": 8,
+    "swapTotalBytes": "7516192768",
+    "ramTotalBytes": "8589934592"
+  },
+  "writerId": "owwmdnutci7lb0ef2z7rm2jj28f7k5cx"
+}

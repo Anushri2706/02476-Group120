@@ -1,0 +1,12 @@
+{"time":"2026-01-20T14:22:29.95961+01:00","level":"INFO","msg":"stream: starting","core version":"0.24.0"}
+{"time":"2026-01-20T14:22:31.078085+01:00","level":"INFO","msg":"stream: created new stream","id":"2dltjpkg"}
+{"time":"2026-01-20T14:22:31.078157+01:00","level":"INFO","msg":"handler: started","stream_id":"2dltjpkg"}
+{"time":"2026-01-20T14:22:31.078491+01:00","level":"INFO","msg":"stream: started","id":"2dltjpkg"}
+{"time":"2026-01-20T14:22:31.07935+01:00","level":"INFO","msg":"writer: started","stream_id":"2dltjpkg"}
+{"time":"2026-01-20T14:22:31.079428+01:00","level":"INFO","msg":"sender: started","stream_id":"2dltjpkg"}
+{"time":"2026-01-20T14:51:07.47587+01:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-01-20T14:51:07.815011+01:00","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2026-01-20T14:51:07.83777+01:00","level":"INFO","msg":"stream: closing","id":"2dltjpkg"}
+{"time":"2026-01-20T14:51:07.838085+01:00","level":"INFO","msg":"handler: closed","stream_id":"2dltjpkg"}
+{"time":"2026-01-20T14:51:07.838373+01:00","level":"INFO","msg":"sender: closed","stream_id":"2dltjpkg"}
+{"time":"2026-01-20T14:51:07.838385+01:00","level":"INFO","msg":"stream: closed","id":"2dltjpkg"}

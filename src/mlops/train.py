@@ -7,9 +7,10 @@ import torch.optim as optim
 import torch.nn as nn
 import logging
 import os
-from torchmetrics.classification import MulticlassAccuracy
-from torchmetrics import MeanMetric
-
+from torchmetrics import MetricCollection, MeanMetric
+from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall, MulticlassF1Score
+import wandb
+from omegaconf import OmegaConf
 
 # Assuming your GTSRB class is in a file named `dataset.py`
 from .data.dataset import GTSRB
@@ -21,6 +22,13 @@ log = logging.getLogger(__name__)
 @hydra.main(config_path="../../configshydra", config_name="config", version_base="1.2")
 def main(cfg: DictConfig):
     #models dir
+    wandb.init(
+        project=cfg.wandb.project_name, 
+        entity=cfg.wandb.team_name,
+        # Convert Hydra config to a standard Python dict for W&B
+        config=OmegaConf.to_container(cfg, resolve=True, throw_on_missing=True),
+        job_type="train" 
+    )
     model_dir = hydra.utils.to_absolute_path(cfg.paths.models)
 
     output_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
@@ -70,8 +78,15 @@ def main(cfg: DictConfig):
     best_val_loss = None
 
     num_classes = cfg.data.num_classes
-    train_acc_metric = MulticlassAccuracy(num_classes=num_classes, average='micro').to(device)
-    val_acc_metric = MulticlassAccuracy(num_classes=num_classes, average='micro').to(device)
+    metrics_template = MetricCollection({
+        'Accuracy': MulticlassAccuracy(num_classes=cfg.data.num_classes, average='micro'),
+        'Precision': MulticlassPrecision(num_classes=cfg.data.num_classes, average='macro'),
+        'Recall': MulticlassRecall(num_classes=cfg.data.num_classes, average='macro'),
+        'F1': MulticlassF1Score(num_classes=cfg.data.num_classes, average='macro')
+    })
+    #clone the template to create to separate buckets for train and val so that they dont contaminate eachother
+    train_metrics = metrics_template.clone(prefix='train_').to(device)
+    val_metrics = metrics_template.clone(prefix='val_').to(device)
     train_loss_metric = MeanMetric().to(device)
     val_loss_metric = MeanMetric().to(device)
 
@@ -85,7 +100,7 @@ def main(cfg: DictConfig):
             loss.backward()
             optimizer.step()
             train_loss_metric.update(loss)
-            train_acc_metric.update(outputs, labels)
+            train_metrics.update(outputs, labels)
 
         model.eval()
 
@@ -93,26 +108,38 @@ def main(cfg: DictConfig):
             for img, labels in val_loader:
                 img, labels = img.to(device), labels.to(device) 
                 outputs = model(img)
-                val_loss_metric.update(criterion(outputs, labels))
-                val_acc_metric.update(outputs, labels)
+                val_loss = criterion(outputs, labels)
+                val_loss_metric.update(val_loss)
+                val_metrics.update(outputs, labels)
 
-        epoch_train_loss = train_loss_metric.compute()
-        epoch_train_acc = train_acc_metric.compute()
-        epoch_val_loss = val_loss_metric.compute()
-        epoch_val_acc = val_acc_metric.compute()
+        tr_metrics = train_metrics.compute()
+        vl_metrics = val_metrics.compute()
+        tr_loss = train_loss_metric.compute()
+        vl_loss = val_loss_metric.compute()
 
-        log.info(f'Epoch: {epoch} | '
-                f'Train Loss: {epoch_train_loss:.4f} Acc: {epoch_train_acc:.2%} | '
-                f'Val Loss: {epoch_val_loss:.4f} Acc: {epoch_val_acc:.2%}')
+        log_dict = {
+            "epoch": epoch,
+            "train_loss": tr_loss.item(),
+            "val_loss": vl_loss.item(),
+        }
+        # Add all metric collection results to the dict
+        # The keys already have 'train_' and 'val_' prefixes!
+        log_dict.update({k: v.item() for k, v in tr_metrics.items()})
+        log_dict.update({k: v.item() for k, v in vl_metrics.items()})
 
-        # Reset metrics for the next epoch
+        # Log everything at once
+        wandb.log(log_dict)
+
+        log.info(f"Epoch {epoch} | Train Loss: {tr_loss:.4f} Acc: {tr_metrics['train_Accuracy']:.2%} | Val Loss: {vl_loss:.4f} Acc: {vl_metrics['val_Accuracy']:.2%}")
+
+        # Reset metrics for next epoch
+        train_metrics.reset()
+        val_metrics.reset()
         train_loss_metric.reset()
-        train_acc_metric.reset()
         val_loss_metric.reset()
-        val_acc_metric.reset()
 
-        if best_val_loss is None or epoch_val_loss <= best_val_loss:
-            best_val_loss = epoch_val_loss
+        if best_val_loss is None or vl_loss <= best_val_loss:
+            best_val_loss = vl_loss
             #save with additional info because we may change the architecture of the model at 
             #some point and to open this this model we need to intialize the model as it was saved.
             checkpoint = {
@@ -122,6 +149,7 @@ def main(cfg: DictConfig):
                 'metric': best_val_loss
             }
             torch.save(checkpoint, os.path.join(output_dir, "best_model.pth"))
+    wandb.finish()
     #saves after training to 'models/latest' helpful for now but we could eliminate it later
     best_model_path = os.path.join(output_dir, "best_model.pth")
     latest_dir = os.path.join(model_dir, "latest")
