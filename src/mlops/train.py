@@ -19,6 +19,11 @@ from .model import TinyCNN
 # Initialize logger
 log = logging.getLogger(__name__)
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+)
+
 @hydra.main(config_path="../../configshydra", config_name="config", version_base="1.2")
 def main(cfg: DictConfig):
     #models dir
@@ -76,6 +81,11 @@ def main(cfg: DictConfig):
     optimizer = optim.Adam(model.parameters(), lr=cfg.training.lr)
     epochs = cfg.training.epochs
     best_val_loss = None
+    
+    log.info(f"Starting training for {epochs} epochs on device: {device}")
+    log.info(f"Model: {model.__class__.__name__}")
+    log.info(f"Optimizer: {optimizer.__class__.__name__} (lr={cfg.training.lr})")
+    log.info(f"Batch size: {cfg.training.batch_size}")
 
     num_classes = cfg.data.num_classes
     metrics_template = MetricCollection({
@@ -92,7 +102,10 @@ def main(cfg: DictConfig):
 
     for epoch in range(epochs):
         model.train()
-        for img, labels in train_loader:
+        log.info(f"Starting Epoch {epoch + 1}/{epochs}")
+        
+        total_batches = len(train_loader)
+        for batch_idx, (img, labels) in enumerate(train_loader, 1):
             img, labels = img.to(device), labels.to(device)
             optimizer.zero_grad()
             outputs = model(img)
