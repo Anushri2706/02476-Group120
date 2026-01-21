@@ -74,3 +74,13 @@ def evaluate(ctx: Context) -> None:
 def visualize(ctx: Context) -> None:
     """Visualize model performance."""
     ctx.run(f"uv run python -m {PROJECT_NAME}.visualize", echo=True, pty=not WINDOWS)
+
+@task
+def api(ctx: Context) -> None:
+    """Run the FastAPI application locally."""
+    # --host 0.0.0.0 is REQUIRED for Docker
+    ctx.run(
+        f"uv run uvicorn src.{PROJECT_NAME}.api:app --host 0.0.0.0 --port 8000 --reload", 
+        echo=True, 
+        pty=not WINDOWS
+    )
