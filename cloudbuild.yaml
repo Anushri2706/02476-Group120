@@ -11,7 +11,7 @@ steps:
     'dockerfiles/train.dockerfile',
     '.'
   ]
-  
+
 - name: 'gcr.io/cloud-builders/docker'
   id: 'Push container image'
   args: [
@@ -19,7 +19,7 @@ steps:
     'europe-west1-docker.pkg.dev/group-120/mlops-group120/train'
   ]
 
-  - name: 'gcr.io/cloud-builders/docker'
+- name: 'gcr.io/cloud-builders/docker'
   id: 'Run training job'
   secretEnv: ['WANDB_API_KEY']
   args:
