@@ -43,6 +43,7 @@ dependencies = [
     "omegaconf>=2.3.0",
     "httpx>=0.28.1",
     "locust>=2.43.1",
+    "google-cloud-storage"
 ]
 
 # Optional dependency groups. The 'dev' group includes tools for development
