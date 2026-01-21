@@ -20,7 +20,6 @@ output/*
 wandb/
 
 # --- Models (Ignore weights, keep code & structure) ---
-models/*
 !models/*.py
 !models/.gitkeep
 
