@@ -10,3 +10,5 @@ Run the inv commands inside the container preceeded by uv run:
 uv run inv preprocess-data
 uv run inv train 
 etc. 
+
+docker run --platform linux/amd64 -it -p 8000:8000 api:latest    
