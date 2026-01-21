@@ -1,7 +1,7 @@
 name: "Run tests"
 
 on:
-  workflow dispatch:
+  workflow_dispatch:
   push:
     branches: [ master, main ]
   pull_request:
