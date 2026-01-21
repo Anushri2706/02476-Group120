@@ -14,4 +14,4 @@ ENV PYTHONPATH=/app
 COPY entrypoint.sh ./
 RUN chmod +x ./entrypoint.sh
 ENTRYPOINT [ "./entrypoint.sh" ]
-CMD ["uv", "run", "python", "uvicorn", "src.mlops.api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "python"]
