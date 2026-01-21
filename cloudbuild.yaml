@@ -11,6 +11,7 @@ steps:
     'dockerfiles/train.dockerfile',
     '.'
   ]
+  
 - name: 'gcr.io/cloud-builders/docker'
   id: 'Push container image'
   args: [
