@@ -4,7 +4,7 @@ import torch
 
 
 class TinyCNN(nn.Module):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, dropout=0.5):
         super(TinyCNN, self).__init__()
 
         # --- Block 1 ---
@@ -30,7 +30,7 @@ class TinyCNN(nn.Module):
         # The flatten size is: Channels * Height * Width
         # 128 channels * 8 pixels * 8 pixels = 8192
         self.fc1 = nn.Linear(128 * 8 * 8, 512)
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(dropout)
         self.fc2 = nn.Linear(512, num_classes)
 
     def forward(self, x):

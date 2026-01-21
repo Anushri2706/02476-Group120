@@ -1,4 +1,8 @@
-
-epochs: 7
-lr : 1e-4
+epochs: 1
 batch_size: 16
+# Define the optimizer object structure
+optimizer:
+  _target_: torch.optim.Adam
+  lr: 1e-4
+  # You can now easily add other specific args like weight_decay:
+  # weight_decay: 0.01

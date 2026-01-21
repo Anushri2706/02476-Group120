@@ -10,6 +10,7 @@ from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision,
 
 from .data.dataset import GTSRB
 from .model import TinyCNN
+from hydra.utils import instantiate
 
 @hydra.main(config_path="../../configshydra", config_name="config", version_base="1.2")
 def evaluate(cfg: DictConfig):
@@ -18,8 +19,7 @@ def evaluate(cfg: DictConfig):
     ckpt_path = hydra.utils.to_absolute_path(cfg.ckpt_path)
     checkpoint = torch.load(ckpt_path, map_location=device)
     saved_cfg = checkpoint['config']
-    
-    model = TinyCNN(num_classes=saved_cfg.data.num_classes).to(device)
+    model = instantiate(saved_cfg.model).to(device)
     model.load_state_dict(checkpoint['state_dict'])
     model.eval()
     image_size = tuple(saved_cfg.image_size)
@@ -30,7 +30,6 @@ def evaluate(cfg: DictConfig):
         mode="test",
         transform=transform
     )
-    #num workers 0 for now because the process enver terminates with 4 on my computer
     test_loader = DataLoader(test_ds, batch_size=cfg.training.batch_size, shuffle=False, num_workers=0)
 
 
