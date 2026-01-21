@@ -1,0 +1,6 @@
+# points to the python class: src.mlops.model.TinyCNN
+_target_: src.mlops.model.TinyCNN
+
+# arguments to pass to TinyCNN.__init__
+num_classes: ${data.num_classes}
+dropout: 0.3

@@ -7,6 +7,7 @@ import torch.optim as optim
 import torch.nn as nn
 import logging
 import os
+from hydra.utils import instantiate
 from torchmetrics import MetricCollection, MeanMetric
 from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall, MulticlassF1Score
 import wandb
@@ -59,10 +60,10 @@ def main(cfg: DictConfig):
     )
 
     train_loader = DataLoader(
-        train_ds, batch_size=cfg.training.batch_size, shuffle=True, num_workers=4, pin_memory=True
+        train_ds, batch_size=cfg.training.batch_size, shuffle=True, num_workers=0, pin_memory=True
     )
 
-    val_loader = DataLoader(val_ds, batch_size=cfg.training.batch_size, shuffle=False, num_workers=4, pin_memory=True)
+    val_loader = DataLoader(val_ds, batch_size=cfg.training.batch_size, shuffle=False, num_workers=0, pin_memory=True)
 
 
     # --- Verification (Optional) ---
@@ -76,16 +77,17 @@ def main(cfg: DictConfig):
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    model = TinyCNN(num_classes=cfg.data.num_classes).to(device)
+    #model = TinyCNN(num_classes=cfg.data.num_classes).to(device)
+    model = instantiate(cfg.model).to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=cfg.training.lr)
+    optimizer = instantiate(cfg.training.optimizer, params=model.parameters())
     epochs = cfg.training.epochs
     best_val_loss = None
     
     log.info(f"Starting training for {epochs} epochs on device: {device}")
-    log.info(f"Model: {model.__class__.__name__}")
-    log.info(f"Optimizer: {optimizer.__class__.__name__} (lr={cfg.training.lr})")
-    log.info(f"Batch size: {cfg.training.batch_size}")
+    log.info("Training configuration:\n" + OmegaConf.to_yaml(cfg.training, resolve=True))
+    log.info("Model configuration:\n" + OmegaConf.to_yaml(cfg.model, resolve=True))
+
 
     num_classes = cfg.data.num_classes
     metrics_template = MetricCollection({

@@ -10,7 +10,8 @@ from torchvision import transforms
 from torchmetrics.classification import MulticlassConfusionMatrix
 
 from .data.dataset import GTSRB
-from .model import TinyCNN
+#from .model import TinyCNN
+from hydra.utils import instantiate
 
 @hydra.main(config_path="../../configshydra", config_name="config", version_base="1.2")
 def visualize(cfg: DictConfig):
@@ -22,7 +23,7 @@ def visualize(cfg: DictConfig):
     saved_cfg = checkpoint['config']
     
     # 2. Init Model
-    model = TinyCNN(num_classes=saved_cfg.data.num_classes).to(device)
+    model = instantiate(saved_cfg.model).to(device)
     model.load_state_dict(checkpoint['state_dict'])
     model.eval()
 

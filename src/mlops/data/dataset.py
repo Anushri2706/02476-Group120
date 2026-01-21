@@ -34,7 +34,7 @@ class GTSRB(Dataset):
 
         df = pd.read_csv(csv_path)
         self.samples = [
-            (self.raw_dir / "gtsrb" / p, label)
+            (self.raw_dir / p, label)
             for p, label in zip(df["Path"], df["ClassId"])
         ]
 
