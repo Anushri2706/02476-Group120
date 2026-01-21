@@ -12,6 +12,11 @@ RUN --mount=type=cache,target=/root/.cache/uv uv sync
 
 ENV PYTHONPATH=/app
 COPY entrypoint.sh ./
+COPY models/latest/best_model.pth models/latest/best_model.pth 
 RUN chmod +x ./entrypoint.sh
 ENTRYPOINT [ "./entrypoint.sh" ]
-CMD ["uv", "run", "python"]
+
+EXPOSE 8000
+
+# Since you want terminal access, we keep the default CMD or set it to bash
+CMD ["/bin/bash"]
