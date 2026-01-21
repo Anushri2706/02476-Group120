@@ -8,7 +8,7 @@ import hydra
 import omegaconf
 from omegaconf import DictConfig
 from dotenv import load_dotenv
-import kagglehub
+from google.cloud import storage
 
 # Load environment variables from .env file (Create this file in project root!)
 load_dotenv()
@@ -30,27 +30,47 @@ def download_data(cfg: DictConfig) -> Path:
 
     log.info("Downloading dataset...")
 
-    # 2. Authenticate (Relies on env vars KAGGLE_USERNAME and KAGGLE_KEY)
-    if not os.getenv("KAGGLE_USERNAME") or not os.getenv("KAGGLE_KEY"):
-        raise EnvironmentError("Please set KAGGLE_USERNAME and KAGGLE_KEY in your .env file or environment.")
+    # # 2. Authenticate (Relies on env vars KAGGLE_USERNAME and KAGGLE_KEY)
+    # if not os.getenv("KAGGLE_USERNAME") or not os.getenv("KAGGLE_KEY"):
+    #     raise EnvironmentError("Please set KAGGLE_USERNAME and KAGGLE_KEY in your .env file or environment.")
 
-    # 3. Download (This goes to a temp cache folder by default)
-    # We let kagglehub download to its default cache first to ensure integrity
-    cache_path = kagglehub.dataset_download(cfg.data.dataset_name)
-    print(f"Kaggle cache path {cache_path}")
-    # 4. Move to our clean 'data/raw/gtsrb' location
-    log.info(f"Moving data from {cache_path} to {final_path}...")
+    # # 3. Download (This goes to a temp cache folder by default)
+    # # We let kagglehub download to its default cache first to ensure integrity
+    # cache_path = kagglehub.dataset_download(cfg.data.dataset_name)
+    # print(f"Kaggle cache path {cache_path}")
+    # # 4. Move to our clean 'data/raw/gtsrb' location
+    # log.info(f"Moving data from {cache_path} to {final_path}...")
 
-    # Ensure raw_dir exists
-    rawData_path.mkdir(parents=True, exist_ok=True)
+    # # Ensure raw_dir exists
+    # rawData_path.mkdir(parents=True, exist_ok=True)
 
-    # If the clean folder exists but is partial/wrong, remove it first
-    if final_path.exists():
-        shutil.rmtree(final_path)
+    # # If the clean folder exists but is partial/wrong, remove it first
+    # if final_path.exists():
+    #     shutil.rmtree(final_path)
 
-    # Move the files
-    shutil.copytree(cache_path, final_path)
+    # # Move the files
+    # shutil.copytree(cache_path, final_path)
 
+    # return final_path
+
+    # MOCK DOWNLOAD FOR TESTING WITHOUT KAGGLE ACCESS
+    client = storage.Client()
+    bucket = client.bucket(cfg.data.gcs.bucket)
+
+    final_path.mkdir(parents=True, exist_ok=True)
+
+    blobs = bucket.list_blobs(prefix=cfg.data.gcs.prefix)
+
+    for blob in blobs:
+        if blob.name.endswith('/'):
+            continue  # skip directories
+
+        rel_path = Path(blob.name).relative_to(cfg.data.gcs.prefix)
+        local_path = final_path / rel_path
+        local_path.parent.mkdir(parents=True, exist_ok=True)
+        blob.download_to_filename(local_path)
+
+    log.info(f"Data downloaded to {final_path}")
     return final_path
 
 

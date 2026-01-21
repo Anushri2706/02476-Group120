@@ -5,11 +5,11 @@ steps:
     - DOCKER_BUILDKIT=1
   args: [
     'build',
-    '.',
     '-t',
     'europe-west1-docker.pkg.dev/group-120/mlops-group120/train',
     '-f',
-    'dockerfiles/train.dockerfile'
+    'dockerfiles/train.dockerfile',
+    '.'
   ]
 - name: 'gcr.io/cloud-builders/docker'
   id: 'Push container image'

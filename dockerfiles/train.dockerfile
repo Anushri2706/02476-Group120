@@ -18,5 +18,4 @@ ENTRYPOINT [ "./entrypoint.sh" ]
 
 EXPOSE 8000
 
-# Since you want terminal access, we keep the default CMD or set it to bash
 CMD ["/bin/bash"]
