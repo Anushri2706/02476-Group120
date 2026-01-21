@@ -12,10 +12,12 @@ outputs/*
 # --- For Apple Lovers ---
 .DS_Store
 
-# --- Data (Ignore files, keep scripts & structure) ---
+# --- Data/Output (Ignore files, keep scripts & structure) ---
 /data/*
 !/data/*.py
 !/data/.gitkeep
+output/*
+wandb/
 
 # --- Models (Ignore weights, keep code & structure) ---
 models/*
@@ -25,3 +27,10 @@ models/*
 # --- Reports (Ignore generated figures, keep structure) ---
 reports/figures/*
 !reports/figures/.gitkeep
+/data
+/dataset/*
+
+.dvc/config.local
+.dvc/tmp
+.dvc/cache/files/md5/*
+.dvc/cache/*

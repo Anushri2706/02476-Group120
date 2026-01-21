@@ -59,3 +59,28 @@ def serve_docs(ctx: Context) -> None:
 def hello_module(ctx: Context) -> None:
     """Run the hello.py script as a module to test imports."""
     ctx.run(f"uv run python -m {PROJECT_NAME}.hello", echo=True, pty=not WINDOWS)
+
+@task
+def train(ctx: Context) -> None:
+    """Train model."""
+    ctx.run(f"uv run python -m {PROJECT_NAME}.train", echo=True, pty=not WINDOWS)
+
+@task
+def evaluate(ctx: Context) -> None:
+    """Evaluate model."""
+    ctx.run(f"uv run python -m {PROJECT_NAME}.evaluate", echo=True, pty=not WINDOWS)
+
+@task
+def visualize(ctx: Context) -> None:
+    """Visualize model performance."""
+    ctx.run(f"uv run python -m {PROJECT_NAME}.visualize", echo=True, pty=not WINDOWS)
+
+@task
+def api(ctx: Context) -> None:
+    """Run the FastAPI application locally."""
+    # --host 0.0.0.0 is REQUIRED for Docker
+    ctx.run(
+        f"uv run uvicorn src.{PROJECT_NAME}.api:app --host 0.0.0.0 --port 8000 --reload", 
+        echo=True, 
+        pty=not WINDOWS
+    )

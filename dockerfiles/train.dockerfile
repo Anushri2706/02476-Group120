@@ -1,12 +1,22 @@
-FROM ghcr.io/astral-sh/uv:python3.12-alpine AS base
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm
 
-COPY uv.lock uv.lock
-COPY pyproject.toml pyproject.toml
+WORKDIR /app
 
-RUN uv sync --frozen --no-install-project
-
+COPY pyproject.toml uv.lock README.md ./
 COPY src src/
+COPY tasks.py . 
+COPY configshydra configshydra/
 
-RUN uv sync --frozen
+ENV UV_LINK_MODE=copy
+RUN --mount=type=cache,target=/root/.cache/uv uv sync
 
-ENTRYPOINT ["uv", "run", "src/mlops/train.py"]
+ENV PYTHONPATH=/app
+COPY entrypoint.sh ./
+COPY models/latest/best_model.pth models/latest/best_model.pth 
+RUN chmod +x ./entrypoint.sh
+ENTRYPOINT [ "./entrypoint.sh" ]
+
+EXPOSE 8000
+
+# Since you want terminal access, we keep the default CMD or set it to bash
+CMD ["/bin/bash"]
