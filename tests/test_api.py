@@ -24,7 +24,7 @@ def test_cv_model_success():
     assert response.status_code == 200
     json_response = response.json()
     # The model is not loaded in the test environment, so we expect this message.
-    assert json_response["message"] == "Model not loaded"
+    assert json_response["message"] == "Model not loaded. Check server logs."
     # The status code in the JSON body should be 500
     assert json_response["status-code"] == HTTPStatus.INTERNAL_SERVER_ERROR.value
 
@@ -43,4 +43,4 @@ def test_cv_model_wrong_file_type():
     response = client.post("/cv_model/", files=files)
     assert response.status_code == 200
     json_response = response.json()
-    assert json_response["message"] == "Model not loaded"
+    assert json_response["message"] == "Model not loaded. Check server logs."
