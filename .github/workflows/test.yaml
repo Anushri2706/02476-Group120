@@ -1,6 +1,7 @@
 name: "Run tests"
 
 on:
+  workflow_dispatch:
   push:
     branches: [ master, main ]
   pull_request:
@@ -24,6 +25,18 @@ jobs:
       run: |
         uv sync --dev
 
-    - name: Test with pytest
-      run: |
-        uv run pytest -v
+    - name: Auth with GCP
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}
+    
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Submit build 
+      run: gcloud builds submit --config cloudbuild.yaml
+
+
+    # - name: Test with pytest
+    #   run: |
+    #     uv run pytest -v

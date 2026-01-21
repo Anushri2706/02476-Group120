@@ -37,10 +37,13 @@ dependencies = [
     "matplotlib>=3.10.8",
     "seaborn>=0.13.2",
     "python-multipart>=0.0.21",
-    "opencv-python-headless>=4.13.0.90",
+    "opencv-python-headless==4.10.0.84",
     "python-multipart>=0.0.21",
     "wandb>=0.24.0",
-    "omegaconf>=2.3.0"
+    "omegaconf>=2.3.0",
+    "httpx>=0.28.1",
+    "locust>=2.43.1",
+    "google-cloud-storage"
 ]
 
 # Optional dependency groups. The 'dev' group includes tools for development
