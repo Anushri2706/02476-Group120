@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from fastapi import UploadFile, File, FastAPI
+from fastapi import UploadFile, File, FastAPI, Request
 from http import HTTPStatus
 import cv2
 import numpy as np
@@ -11,7 +11,7 @@ import os
 import hydra
 from hydra import compose, initialize
 from hydra.core.global_hydra import GlobalHydra
-
+from hydra.utils import instantiate
 # Import your model
 from mlops.model import TinyCNN 
 
@@ -32,63 +32,66 @@ async def lifespan(app: FastAPI):
     
     print(f"Hydra config loaded. Project: {cfg.wandb.project_name}")
 
-    # --- 2. Extract Parameters ---
-    # Get num_classes directly from config
-    num_classes = cfg.data.num_classes
+    
     
     # Construct the model path. 
     # train.py saves the latest model to: cfg.paths.models / "latest" / "best_model.pth"
     # We use to_absolute_path to resolve relative paths correctly based on where you run uvicorn
-    models_dir = hydra.utils.to_absolute_path(cfg.paths.models)
-    model_path = os.path.join(models_dir, "latest", "best_model.pth")
+    model_path = hydra.utils.to_absolute_path(cfg.ckpt_path)
+    print(f"Attempting to load model from {model_path}...")
 
     print(f"Loading model from {model_path}...")
 
-    # --- 3. Load Model ---
-    model = TinyCNN(num_classes=num_classes).to(device)
-    
     if os.path.exists(model_path):
         checkpoint = torch.load(model_path, map_location=device)
         
-        # Handle the checkpoint dictionary structure
-        if 'state_dict' in checkpoint:
-            model.load_state_dict(checkpoint['state_dict'])
-        else:
-            model.load_state_dict(checkpoint)
-            
+        # Extract the Saved Config (architecture definition)
+        saved_cfg = checkpoint['config']
+        
+        # Instantiate dynamically
+        model = instantiate(saved_cfg.model).to(device)
+        
+        # Load Weights
+        model.load_state_dict(checkpoint['state_dict'])
         model.eval()
-        ml_models["tiny_cnn"] = model
-        print(f"Model loaded successfully with {num_classes} classes!")
+        
+        # Attach to App State
+        app.state.model = model
+        app.state.config = saved_cfg 
+        
+        print(f"Model <{model.__class__.__name__}> loaded successfully!")
     else:
-        # Fail gracefully or raise an error depending on your needs
+        app.state.model = None
         print(f"CRITICAL WARNING: Model file not found at {model_path}")
-        print("Inference will fail until the model is fixed.")
 
     yield 
     
-    # --- Cleanup ---
-    ml_models.clear()
+    app.state.model = None
 
 app = FastAPI(lifespan=lifespan)
 
 @app.post("/cv_model/")
-async def cv_model(data: UploadFile = File(...)):
-    if "tiny_cnn" not in ml_models:
+async def cv_model(request: Request, data: UploadFile = File(...)):
+    # --- 4. Check if Model is Loaded ---
+    if not hasattr(request.app.state, "model") or request.app.state.model is None:
         return {
-            "message": "Model not loaded",
+            "message": "Model not loaded. Check server logs.",
             "status-code": HTTPStatus.INTERNAL_SERVER_ERROR.value
         }
     
-    model = ml_models["tiny_cnn"]
+    model = request.app.state.model
+    # Use the saved config to ensure image size matches what the model expects
+    cfg = request.app.state.config
 
-    # ... (Rest of your preprocessing and inference code remains the same) ...
+    # --- 5. Inference ---
     content = await data.read()
     nparr = np.frombuffer(content, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     
-    # Note: You could also load image_size from cfg.image_size if you wanted!
-    res = cv2.resize(img_rgb, (64, 64))
+    # Use config-defined image size
+    target_size = tuple(cfg.image_size)
+    res = cv2.resize(img_rgb, target_size)
     
     input_tensor = transforms.ToTensor()(res)
     input_batch = input_tensor.unsqueeze(0).to(device)
