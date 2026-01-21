@@ -123,7 +123,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 1 fill here ---
+120
 
 ### Question 2
 > **Enter the study number for each member in the group**
@@ -134,7 +134,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 2 fill here ---
+s256835, s253745, s215172, s215196, s194799
 
 ### Question 3
 > **Did you end up using any open-source frameworks/packages not covered in the course during your project? If so**
@@ -148,7 +148,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 3 fill here ---
+We didn't use any open-source frameworks not covered in the course.
 
 ## Coding environment
 
@@ -168,7 +168,17 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 4 fill here ---
+We managed dependencies with uv and a pyproject.toml, pinning exact versions via uv.lock for reproducibility. The lock file is committed, so anyone can resolve and install the same versions locally or in Docker.
+
+To reproduce the environment on Linux:
+
+Install uv
+Clone the repo and cd into it.
+Create and sync the virtual environment from the lock file: uv sync
+Activate it: source .venv/bin/activate
+Verify: python -V and uv pip list
+
+In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, guaranteeing the same resolved set. If dev-only tools are grouped, run uv sync --group dev to include them. 
 
 ### Question 5
 
