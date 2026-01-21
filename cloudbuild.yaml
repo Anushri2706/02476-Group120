@@ -17,5 +17,27 @@ steps:
     'push',
     'europe-west1-docker.pkg.dev/group-120/mlops-group120/train'
   ]
+
+  - name: 'gcr.io/cloud-builders/docker'
+  id: 'Run training job'
+  secretEnv: ['WANDB_API_KEY']
+  args:
+    [
+      'run',
+      '--rm',
+      '-e', 'WANDB_API_KEY',
+      '-e', 'WANDB_MODE=online',
+      '-e', 'WANDB_SILENT=true',
+      '-e', 'MODEL_BUCKET=ml-models-group120',
+      '-e', 'MODEL_NAME=train',
+      '-e', 'MODEL_VERSION=${BUILD_ID}',
+      'europe-west1-docker.pkg.dev/group-120/mlops-group120/train'
+    ]
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/group-120/secrets/wandb-api-key/versions/latest
+      env: WANDB_API_KEY
+
 options:
   logging: CLOUD_LOGGING_ONLY
