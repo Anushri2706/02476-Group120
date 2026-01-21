@@ -6,6 +6,7 @@ COPY pyproject.toml uv.lock README.md ./
 COPY src src/
 COPY tasks.py . 
 COPY configshydra configshydra/
+COPY tests/performancetests/locustfile.py tests/performancetests/locustfile.py/
 
 ENV UV_LINK_MODE=copy
 RUN --mount=type=cache,target=/root/.cache/uv uv sync
@@ -18,5 +19,4 @@ RUN chmod +x ./entrypoint.sh
 
 EXPOSE 8000
 
-# Since you want terminal access, we keep the default CMD or set it to bash
 CMD ["/bin/bash"]
