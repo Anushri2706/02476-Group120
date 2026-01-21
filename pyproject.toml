@@ -39,7 +39,8 @@ dependencies = [
     "opencv-python>=4.13.0.90",
     "python-multipart>=0.0.21",
     "wandb>=0.24.0",
-    "omegaconf>=2.3.0"
+    "omegaconf>=2.3.0",
+    "google-cloud-storage"
 ]
 
 # Optional dependency groups. The 'dev' group includes tools for development
