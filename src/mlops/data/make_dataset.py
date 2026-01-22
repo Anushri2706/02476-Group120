@@ -21,7 +21,7 @@ def download_data(cfg: DictConfig) -> Path:
 
     # 1. Setup Paths
     rawData_path = Path(hydra.utils.to_absolute_path(cfg.data.raw_dir))
-    final_path = rawData_path / cfg.data.clean_name
+    final_path = rawData_path
 
     # If data already exists, skip download
     if final_path.exists() and (final_path / "Train.csv").exists():
