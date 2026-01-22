@@ -23,6 +23,7 @@ wandb/
 !models/*.py
 !models/.gitkeep
 !models/**/*.pth
+
 # --- Reports (Ignore generated figures, keep structure) ---
 reports/figures/*
 !reports/figures/.gitkeep
