@@ -178,7 +178,7 @@ Create and sync the virtual environment from the lock file: uv sync
 Activate it: source .venv/bin/activate
 Verify: python -V and uv pip list
 
-In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, guaranteeing the same resolved set. If dev-only tools are grouped, run uv sync --group dev to include them. 
+In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, guaranteeing the same resolved set. If dev-only tools are grouped, run uv sync --group dev to include them.
 
 ### Question 5
 
