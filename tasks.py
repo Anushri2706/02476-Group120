@@ -60,8 +60,6 @@ def hello_module(ctx: Context) -> None:
     ctx.run(f"uv run python -m {PROJECT_NAME}.hello", echo=True, pty=not WINDOWS)
 
 
-
-
 @task
 def evaluate(ctx: Context) -> None:
     """Evaluate model."""
