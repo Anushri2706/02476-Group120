@@ -5,14 +5,13 @@ import hydra
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import wandb
 from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import DataLoader
 from torchmetrics import MeanMetric, MetricCollection
 from torchmetrics.classification import MulticlassAccuracy, MulticlassF1Score, MulticlassPrecision, MulticlassRecall
 from torchvision import transforms
-
-import wandb
 
 # Assuming your GTSRB class is in a file named `dataset.py`
 from .data.dataset import GTSRB
