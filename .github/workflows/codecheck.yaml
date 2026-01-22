@@ -1,4 +1,4 @@
-name: "Run tests"
+name: "Code Check"
 
 on:
   workflow_dispatch:
@@ -8,8 +8,7 @@ on:
     branches: [ master, main ]
 
 jobs:
-  build:
-
+  check:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,18 +26,14 @@ jobs:
       run: |
         uv sync --dev
 
-    - name: Auth with GCP
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}
-    
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v2
-
-    - name: Test with pytest
+    - name: Check code quality with ruff
       run: |
-        uv run pytest -v
+        uv run ruff check .
 
-    - name: Submit build 
-      run: gcloud builds submit --config cloudbuild.yaml
+    - name: Check formatting with ruff
+      run: |
+        uv run ruff format --check .
 
+    - name: Type checking with mypy
+      run: |
+        uv run mypy .
