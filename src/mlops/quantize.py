@@ -1,6 +1,6 @@
 import torch
 from torch.quantization import quantize_dynamic
-from .model import TinyCNN  # adjust import if needed
+from .model import TinyCNN
 
 
 def load_quantized_model(checkpoint_path: str, num_classes: int, device: str = "cpu"):
