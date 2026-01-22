@@ -23,6 +23,9 @@ wandb/
 models/*
 !models/*.py
 !models/.gitkeep
+# --- Linting
+.ruff_cache/
+.mypy_cache/
 # --- Reports (Ignore generated figures, keep structure) ---
 reports/figures/*
 !reports/figures/.gitkeep
