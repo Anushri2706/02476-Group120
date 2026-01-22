@@ -1,0 +1,8 @@
+data_gcs:
+    bucket: "traffic_sign_data"
+    raw_dir: "dataset"
+    processed_dir: "processed"
+
+model_gcs:
+    bucket: "ml-models-group120"
+    prefix: "gtsrb/models"

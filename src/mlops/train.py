@@ -12,6 +12,8 @@ from torchmetrics import MetricCollection, MeanMetric
 from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall, MulticlassF1Score
 import wandb
 from omegaconf import OmegaConf
+from google.cloud import storage
+import torch 
 
 # Assuming your GTSRB class is in a file named `dataset.py`
 from .data.dataset import GTSRB
@@ -46,15 +48,15 @@ def main(cfg: DictConfig):
 
     # 2. Initialize Datasets using paths from Hydra config
     train_ds = GTSRB(
-        raw_dir=hydra.utils.to_absolute_path(cfg.data.raw_dir),
-        processed_dir=hydra.utils.to_absolute_path(cfg.data.processed_dir),
+        raw_dir=hydra.utils.to_absolute_path(cfg.cloud.data_gcs.raw_dir),
+        processed_dir=hydra.utils.to_absolute_path(cfg.cloud.data_gcs.processed_dir),
         mode="train",
         transform=transform,
     )
 
     val_ds = GTSRB(
-        raw_dir=hydra.utils.to_absolute_path(cfg.data.raw_dir),
-        processed_dir=hydra.utils.to_absolute_path(cfg.data.processed_dir),
+        raw_dir=hydra.utils.to_absolute_path(cfg.cloud.data_gcs.raw_dir),
+        processed_dir=hydra.utils.to_absolute_path(cfg.cloud.data_gcs.processed_dir),
         mode="val",
         transform=transform,
     )
@@ -166,14 +168,42 @@ def main(cfg: DictConfig):
             torch.save(checkpoint, os.path.join(output_dir, "best_model.pth"))
     wandb.finish()
     #saves after training to 'models/latest' helpful for now but we could eliminate it later
-    best_model_path = os.path.join(output_dir, "best_model.pth")
-    latest_dir = os.path.join(model_dir, "latest")
-    os.makedirs(latest_dir, exist_ok=True)
-    latest_save_path = os.path.join(latest_dir, "best_model.pth")
-    # Load the checkpoint dict
-    checkpoint = torch.load(best_model_path)
-    # Save the checkpoint dict (preserves config)
-    torch.save(checkpoint, latest_save_path)
-        
+    # best_model_path = os.path.join(output_dir, "best_model.pth")
+    # latest_dir = os.path.join(model_dir, "latest")
+    # os.makedirs(latest_dir, exist_ok=True)
+    # latest_save_path = os.path.join(latest_dir, "best_model.pth")
+    # # Load the checkpoint dict
+    # checkpoint = torch.load(best_model_path)
+    # # Save the checkpoint dict (preserves config)
+    # torch.save(checkpoint, latest_save_path)
+
+        # ==================================================
+    # FINAL STEP: UPLOAD TRAINED MODEL TO GCS (MANDATORY)
+    # ==================================================
+    # ==================================================
+    # FINAL STEP: UPLOAD TRAINED MODEL TO GCS (MANDATORY)
+    # ==================================================
+    log.info("Starting model upload to GCS...")
+
+    local_model_path = "/tmp/model.pth"
+
+    # Save model explicitly
+    torch.save(model.state_dict(), local_model_path)
+
+    client = storage.Client()
+    bucket = client.bucket(cfg.cloud.model_gcs.bucket)
+
+    gcs_dir = f"{cfg.cloud.model_gcs.prefix}/versions/{cfg.cloud.model_gcs.version}"
+    gcs_blob_path = f"{gcs_dir}/model.pth"
+
+    blob = bucket.blob(gcs_blob_path)
+    blob.upload_from_filename(local_model_path)
+
+    if not blob.exists():
+        raise RuntimeError("Model upload to GCS FAILED")
+
+    log.info(f"MODEL UPLOAD SUCCESS: gs://{cfg.cloud.model_gcs.bucket}/{gcs_blob_path}")
+ 
+  
 if __name__ == "__main__":
     main()

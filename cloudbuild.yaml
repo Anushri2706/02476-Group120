@@ -9,7 +9,7 @@ steps:
   args:
     - build
     - -t
-    - europe-west1-docker.pkg.dev/group-120/mlops-group120/train:${BUILD_ID}
+    - europe-west1-docker.pkg.dev/group-120/mlops-group120/train:latest
     - -f
     - dockerfiles/train.dockerfile
     - .
@@ -21,7 +21,7 @@ steps:
   id: 'Push training image'
   args:
     - push
-    - europe-west1-docker.pkg.dev/group-120/mlops-group120/train:${BUILD_ID}
+    - europe-west1-docker.pkg.dev/group-120/mlops-group120/train:latest
 
 # ------------------------------------------------------------
 # Submit Vertex AI job via config file
@@ -36,6 +36,19 @@ steps:
         --region=europe-west1 \
         --display-name=mlops-train-${BUILD_ID} \
         --config=cloud_config.yaml
+
+# - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+#   id: 'Upload model to Vertex AI Registry'
+#   args:
+#     - gcloud
+#     - ai
+#     - models
+#     - upload
+#     - --region=europe-west1
+#     - --display-name=train-model
+#     - --artifact-uri=gs://ml-models-group120/train/versions/${BUILD_ID}
+#     - --container-image-uri=europe-west1-docker.pkg.dev/group-120/mlops-group120/train:latest
+
 
 options:
   logging: CLOUD_LOGGING_ONLY

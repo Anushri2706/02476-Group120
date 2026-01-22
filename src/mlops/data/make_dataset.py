@@ -2,6 +2,7 @@ import os
 import shutil
 import logging
 from pathlib import Path
+from xmlrpc import client
 import pandas as pd
 from sklearn.model_selection import GroupShuffleSplit
 import hydra
@@ -10,78 +11,79 @@ from omegaconf import DictConfig
 from dotenv import load_dotenv
 from google.cloud import storage
 
-# Load environment variables from .env file (Create this file in project root!)
 load_dotenv()
 
 log = logging.getLogger(__name__)
 
+# def download_data(cfg: DictConfig) -> Path:
+#     """
+#     Download raw dataset from a public GCS bucket to a local directory.
 
-def download_data(cfg: DictConfig) -> Path:
-    """Downloads data using kagglehub and moves it to a clean path."""
+#     Reads from:
+#       gs://{raw_bucket}/{raw_prefix}/
 
-    # 1. Setup Paths
-    rawData_path = Path(hydra.utils.to_absolute_path(cfg.data.raw_dir))
-    final_path = rawData_path / cfg.data.clean_name
+#     Writes to:
+#       {cfg.data.raw_dir}/
+#     """
 
-    # If data already exists, skip download
-    if final_path.exists() and (final_path / "Train.csv").exists():
-        log.info(f"Data already exists at {final_path}. Skipping download.")
-        return final_path
+#     # Resolve local destination (Hydra-safe)
+#     data_gcs_bucket_Path = Path(hydra.utils.to_absolute_path(cfg.cloud.data_gcs.bucket)) #Bucket path 
 
-    log.info("Downloading dataset...")
+#     data_gcs_bucket = cfg.cloud.data_gcs.bucket
+#     data_gcs_raw_dir = cfg.cloud.data_gcs.raw_dir
+#     data_gcd_processed_dir = cfg.cloud.data_gcs.processed_dir
 
-    # # 2. Authenticate (Relies on env vars KAGGLE_USERNAME and KAGGLE_KEY)
-    # if not os.getenv("KAGGLE_USERNAME") or not os.getenv("KAGGLE_KEY"):
-    #     raise EnvironmentError("Please set KAGGLE_USERNAME and KAGGLE_KEY in your .env file or environment.")
+#     log.info("DOWNLOADING RAW DATA FROM GCS")
+#     log.info(f"  bucket : {data_gcs_bucket}")
+#     log.info(f"  prefix : {data_gcs_raw_dir}")
+#     log.info(f"  target : {data_gcs_bucket_Path}")
 
-    # # 3. Download (This goes to a temp cache folder by default)
-    # # We let kagglehub download to its default cache first to ensure integrity
-    # cache_path = kagglehub.dataset_download(cfg.data.dataset_name)
-    # print(f"Kaggle cache path {cache_path}")
-    # # 4. Move to our clean 'data/raw/gtsrb' location
-    # log.info(f"Moving data from {cache_path} to {final_path}...")
+#     # Skip download if data already exists
+#     if data_gcs_bucket_Path.exists() and (data_gcs_bucket_Path / "Train.csv").exists():
+#         log.info("Raw data already present locally. Skipping download.")
+#         return data_gcs_bucket_Path
 
-    # # Ensure raw_dir exists
-    # rawData_path.mkdir(parents=True, exist_ok=True)
+#     # Anonymous client for public bucket (NO OAuth)
+#     client = storage.Client.create_anonymous_client()
+#     bucket = client.bucket(data_gcs_bucket)
 
-    # # If the clean folder exists but is partial/wrong, remove it first
-    # if final_path.exists():
-    #     shutil.rmtree(final_path)
+#     # List blobs explicitly so we can validate
+#     blobs = list(bucket.list_blobs(prefix=data_gcs_raw_dir))
+#     log.info(f"FOUND {len(blobs)} OBJECTS IN BUCKET")
 
-    # # Move the files
-    # shutil.copytree(cache_path, final_path)
+#     if not blobs:
+#         raise RuntimeError(
+#             f"No objects found in gs://{data_gcs_bucket}/{data_gcs_raw_dir}. "
+#             "Check bucket name or prefix."
+#         )
+#     log.info("STARTING DOWNLOAD OF RAW DATA...")
+#     # Ensure local directory exists
+#     data_gcs_bucket_Path.mkdir(parents=True, exist_ok=True)
 
-    # return final_path
+#     log.info("Checkpoint 1")
+#     log.info(blobs[0].name)
+#     # Download files
+#     for blob in blobs:
+#         log.info(f"Processing blob: {blob.name}")
+#         # Remove prefix from object path
+#         relative_path = Path(blob.name).relative_to(data_gcs_raw_dir)
+#         local_file_path = data_gcs_bucket_Path / relative_path
 
-    # MOCK DOWNLOAD FOR TESTING WITHOUT KAGGLE ACCESS
-    client = storage.Client()
-    bucket = client.bucket(cfg.data.gcs.bucket)
+#         local_file_path.parent.mkdir(parents=True, exist_ok=True)
+#         blob.download_to_filename(local_file_path)
 
-    final_path.mkdir(parents=True, exist_ok=True)
-
-    blobs = bucket.list_blobs(prefix=cfg.data.gcs.prefix)
-
-    for blob in blobs:
-        if blob.name.endswith('/'):
-            continue  # skip directories
-
-        rel_path = Path(blob.name).relative_to(cfg.data.gcs.prefix)
-        local_path = final_path / rel_path
-        local_path.parent.mkdir(parents=True, exist_ok=True)
-        blob.download_to_filename(local_path)
-
-    log.info(f"Data downloaded to {final_path}")
-    return final_path
+#     log.info(f"RAW DATA DOWNLOADED SUCCESSFULLY TO {data_gcs_bucket_Path}")
+#     return data_gcs_bucket_Path
 
 
 def split_data(data_path: Path, output_dir: Path, cfg: DictConfig):
     """Reads raw data, performs GroupShuffleSplit, and saves to processed."""
 
-    train_csv_path = data_path / "Train.csv"
-    test_csv_path = data_path / "Test.csv"
+    train_csv_path = os.path.join(data_path, "Train.csv")
+    test_csv_path = os.path.join(data_path, "Test.csv")
 
-    if not train_csv_path.exists():
-        raise FileNotFoundError(f"Train.csv not found in {data_path}")
+    # if not train_csv_path.exists():
+    #     raise FileNotFoundError(f"Train.csv not found in {data_path}")
 
     log.info(f"Reading data from {train_csv_path}...")
     df = pd.read_csv(train_csv_path)
@@ -97,42 +99,85 @@ def split_data(data_path: Path, output_dir: Path, cfg: DictConfig):
 
     train_df = df.iloc[train_idx]
     val_df = df.iloc[val_idx]
-
+    log.info("Data split complete.")
     # 3. Save
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    train_save_path = output_dir / "train_split.csv"
-    val_save_path = output_dir / "val_split.csv"
+    train_save_path = os.path.join(output_dir, "train_split.csv")
+    val_save_path = os.path.join(output_dir, "val_split.csv")
 
     train_df.to_csv(train_save_path, index=False)
     val_df.to_csv(val_save_path, index=False)
-
+    log.info(f"Saved train split to {train_save_path}")
     # Copy test.csv as is for convenience
-    if test_csv_path.exists():
-        shutil.copy(test_csv_path, output_dir / "test.csv")
+    # if test_csv_path.exists():
+    #     shutil.copy(test_csv_path, os.path.join(output_dir, "test.csv"))
 
     log.info(f"Saved splits to {output_dir}")
     log.info(f"Train: {len(train_df)} | Val: {len(val_df)}")
+
+def upload_processed_data(bucket_name, PATH_raw, DIR_processed, cfg: DictConfig):
+    log.info("UPLOADING PROCESSED DATA TO GCS")
+
+    client = storage.Client.create_anonymous_client()
+    bucket_obj = client.bucket(bucket_name)
+
+    files = list(PATH_raw.glob("*.csv"))
+    if not files:
+        raise RuntimeError(f"No processed CSV files found in {PATH_raw}")
+    
+    for file in files:
+        blob_path = f"{DIR_processed}/{file.name}"
+        bucket_obj.blob(blob_path).upload_from_filename(file)
+        log.info(f"Uploaded {file.name} → gs://{bucket_name}/{blob_path}")
+
+
+
+
+# def upload_processed_data(local_dir: Path, cfg: DictConfig):
+#     # processed_prefix = cfg.cloud.data_gcs.processed_dir
+
+#     log.info("UPLOADING PROCESSED DATA TO GCS")
+#     log.info(f"  bucket : {processed_bucket}")
+#     log.info(f"  prefix : {processed_prefix}")
+#     log.info(f"  source : {local_dir}")
+
+#     client = storage.Client.create_anonymous_client()
+#     bucket = client.bucket(processed_bucket)
+
+#     files = list(local_dir.glob("*.csv"))
+#     if not files:
+#         raise RuntimeError(f"No processed CSV files found in {local_dir}")
+
+#     for file in files:
+#         blob_path = f"{processed_prefix}/{file.name}"
+#         bucket.blob(blob_path).upload_from_filename(file)
+#         log.info(f"Uploaded {file.name} → gs://{processed_bucket}/{blob_path}")
+
+#     log.info("PROCESSED DATA UPLOAD COMPLETE")
 
 
 @hydra.main(config_path="../../../configshydra", config_name="config", version_base="1.2")
 def main(cfg: DictConfig):
     # Ensure processed path is absolute (Hydra changes working dir)
-    processed_dir = Path(hydra.utils.to_absolute_path(cfg.data.processed_dir))
+    bucket_name = cfg.cloud.data_gcs.bucket
+    PATH_bucket = Path(hydra.utils.to_absolute_path(cfg.cloud.data_gcs.bucket)) #Bucket path 
+    
+    DIR_raw = cfg.cloud.data_gcs.raw_dir
+    PATH_raw = os.path.join(PATH_bucket, DIR_raw)
+
+    DIR_processed = cfg.cloud.data_gcs.processed_dir
+    PATH_processed = os.path.join(PATH_bucket, DIR_processed)
+
 
     # print(omegaconf.OmegaConf.to_yaml(cfg))
     # 1. Download & Clean Path
-    clean_data_path = download_data(cfg)
+    split_data(PATH_raw, PATH_processed, cfg)
 
-    # 2. Split & Save
-    split_data(clean_data_path, processed_dir, cfg)
+    upload_processed_data(bucket_name= bucket_name, PATH_raw= PATH_raw, DIR_processed= DIR_processed, cfg= cfg)
+
 
 
 if __name__ == "__main__":
-    """Ensure you have a file on Project Root level '.env'
-        Following this exact format:
-            KAGGLE_USERNAME="<KAGGLE USERNAME>"
-            KAGGLE_KEY="<API KEY>"
-        """
 
     main()
