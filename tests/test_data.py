@@ -1,39 +1,65 @@
-# from pathlib import Path
+import pytest
+from pathlib import Path
+import pandas as pd
+from torch.utils.data import Dataset
+from PIL import Image
 
-# import pytest
-# import torch
-# from torch.utils.data import Dataset
+from src.mlops.data.dataset import GTSRB
 
-# from mlops.data import MyDataset
+# 1. Setup: Create a fake data folder with predictable data
+@pytest.fixture
+def dummy_data_path(tmp_path: Path) -> tuple[Path, Path]:
+    raw_dir = tmp_path / "raw"
+    processed_dir = tmp_path / "processed"
+    raw_dir.mkdir()
+    processed_dir.mkdir()
 
+    # Create a fake training CSV with 20 items and labels 0-9
+    train_labels = list(range(10)) * 2
+    pd.DataFrame({"Path": [f"img_{i}.png" for i in range(20)], "ClassId": train_labels}).to_csv(
+        processed_dir / "train_split.csv", index=False
+    )
 
-# @pytest.fixture
-# def processed_data_path(tmp_path: Path) -> Path:
-#    """Create dummy processed data files for testing."""
-#    images = torch.randn(10, 3, 32, 32)
-#    labels = torch.randint(0, 43, (10,))
-#    torch.save((images, labels), tmp_path / "train.pt")
-#    torch.save((images, labels), tmp_path / "test.pt")
-#    return tmp_path
+    # Create a fake testing CSV with 5 items and labels 0-4
+    pd.DataFrame({"Path": [f"img_{i}.png" for i in range(5)], "ClassId": range(5)}).to_csv(
+        processed_dir / "test.csv", index=False
+    )
+    
+    # Create dummy image files (the test doesn't need to open them, but the dataset class expects them to exist)
+    for i in range(20):
+        Image.new("RGB", (32, 32)).save(raw_dir / f"img_{i}.png")
 
+    return raw_dir, processed_dir
 
-# def test_my_dataset(processed_data_path: Path):
-#    """Test the MyDataset class."""
-#    # Test training dataset
-#    train_dataset = MyDataset(processed_data_path, train=True)
-#    assert isinstance(train_dataset, Dataset)
-#    assert len(train_dataset) == 10
-#    img, label = train_dataset[0]
-#    assert img.shape == (3, 32, 32)
-#    assert isinstance(label, torch.Tensor)
-#
-#    # Test test dataset
-#    test_dataset = MyDataset(processed_data_path, train=False)
-#    assert isinstance(test_dataset, Dataset)
-#    assert len(test_dataset) == 10
-#
-#
-# def test_my_dataset_file_not_found(tmp_path: Path):
-#    """Test that FileNotFoundError is raised for non-existent data."""
-#    with pytest.raises(FileNotFoundError):
-#        MyDataset(tmp_path)
+# 2. The Test: Check lengths, shapes, and label completeness
+def test_dataset_properties(dummy_data_path: tuple[Path, Path]):
+    raw_dir, processed_dir = dummy_data_path
+
+    # --- Test Training Set ---
+    train_dataset = GTSRB(raw_dir=raw_dir, processed_dir=processed_dir, mode="train")
+    
+    # Check length
+    assert len(train_dataset) == 20
+
+    # Check shape/type of a single data point
+    img, label = train_dataset[0]
+    assert isinstance(img, Image.Image)
+    assert img.size == (32, 32)
+    assert isinstance(label, int)
+
+    # Check that all labels are represented
+    train_labels_in_dataset = {sample[1] for sample in train_dataset.samples}
+    assert train_labels_in_dataset == set(range(10))
+
+    # --- Test Test Set ---
+    test_dataset = GTSRB(raw_dir=raw_dir, processed_dir=processed_dir, mode="test")
+    assert len(test_dataset) == 5
+    test_labels_in_dataset = {sample[1] for sample in test_dataset.samples}
+    assert test_labels_in_dataset == set(range(5))
+
+def test_file_not_found(dummy_data_path: tuple[Path, Path]):
+    """Tests that FileNotFoundError is raised for a missing CSV."""
+    raw_dir, processed_dir = dummy_data_path
+    with pytest.raises(FileNotFoundError):
+        # The "val_split.csv" does not exist, so this should fail
+        GTSRB(raw_dir=raw_dir, processed_dir=processed_dir, mode="val")
