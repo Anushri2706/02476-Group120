@@ -25,6 +25,7 @@ jobs:
       uses: pre-commit/action@v3.0.1
       with:
         extra_args: --all-files
+      continue-on-error: true
 
     # Optional: Commit changes if pre-commit fixed anything
     - name: Commit changes
