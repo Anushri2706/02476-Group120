@@ -1,14 +1,14 @@
-#from pathlib import Path
+# from pathlib import Path
 
-#import pytest
-#import torch
-#from torch.utils.data import Dataset
+# import pytest
+# import torch
+# from torch.utils.data import Dataset
 
-#from mlops.data import MyDataset
+# from mlops.data import MyDataset
 
 
-#@pytest.fixture
-#def processed_data_path(tmp_path: Path) -> Path:
+# @pytest.fixture
+# def processed_data_path(tmp_path: Path) -> Path:
 #    """Create dummy processed data files for testing."""
 #    images = torch.randn(10, 3, 32, 32)
 #    labels = torch.randint(0, 43, (10,))
@@ -17,7 +17,7 @@
 #    return tmp_path
 
 
-#def test_my_dataset(processed_data_path: Path):
+# def test_my_dataset(processed_data_path: Path):
 #    """Test the MyDataset class."""
 #    # Test training dataset
 #    train_dataset = MyDataset(processed_data_path, train=True)
@@ -33,7 +33,7 @@
 #    assert len(test_dataset) == 10
 #
 #
-#def test_my_dataset_file_not_found(tmp_path: Path):
+# def test_my_dataset_file_not_found(tmp_path: Path):
 #    """Test that FileNotFoundError is raised for non-existent data."""
 #    with pytest.raises(FileNotFoundError):
 #        MyDataset(tmp_path)

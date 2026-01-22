@@ -4,7 +4,7 @@ defaults:
   - model: tinycnn
   - training: trainConf
 
-paths: 
+paths:
   models: "models"
 
 ckpt_path: "models/latest/best_model.pth"

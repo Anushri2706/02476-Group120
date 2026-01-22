@@ -1,8 +1,10 @@
 import os
 from io import BytesIO
-import numpy as np
+
 import cv2
-from locust import HttpUser, task, between
+import numpy as np
+from locust import HttpUser, between, task
+
 
 def _make_png_bytes(width: int = 64, height: int = 64) -> bytes:
     img = np.random.randint(0, 255, (height, width, 3), dtype=np.uint8)
@@ -24,4 +26,3 @@ class MyUser(HttpUser):
             "/cv_model/",
             files={"data": ("dummy.png", buf, "image/png")},
         )
-
