@@ -1,44 +1,41 @@
 steps:
+# ------------------------------------------------------------
+# Build training image
+# ------------------------------------------------------------
 - name: 'gcr.io/cloud-builders/docker'
-  id: 'Build container image'
+  id: 'Build training image'
   env:
     - DOCKER_BUILDKIT=1
-  args: [
-    'build',
-    '-t',
-    'europe-west1-docker.pkg.dev/group-120/mlops-group120/train',
-    '-f',
-    'dockerfiles/train.dockerfile',
-    '.'
-  ]
-
-- name: 'gcr.io/cloud-builders/docker'
-  id: 'Push container image'
-  args: [
-    'push',
-    'europe-west1-docker.pkg.dev/group-120/mlops-group120/train'
-  ]
-
-- name: 'gcr.io/cloud-builders/docker'
-  id: 'Run training job'
-  secretEnv: ['WANDB_API_KEY']
   args:
-    [
-      'run',
-      '--rm',
-      '-e', 'WANDB_API_KEY',
-      '-e', 'WANDB_MODE=online',
-      '-e', 'WANDB_SILENT=true',
-      '-e', 'MODEL_BUCKET=ml-models-group120',
-      '-e', 'MODEL_NAME=train',
-      '-e', 'MODEL_VERSION=${BUILD_ID}',
-      'europe-west1-docker.pkg.dev/group-120/mlops-group120/train'
-    ]
+    - build
+    - -t
+    - europe-west1-docker.pkg.dev/group-120/mlops-group120/train:${BUILD_ID}
+    - -f
+    - dockerfiles/train.dockerfile
+    - .
 
-availableSecrets:
-  secretManager:
-    - versionName: projects/group-120/secrets/wandb-api-key/versions/latest
-      env: WANDB_API_KEY
+# ------------------------------------------------------------
+# Push image
+# ------------------------------------------------------------
+- name: 'gcr.io/cloud-builders/docker'
+  id: 'Push training image'
+  args:
+    - push
+    - europe-west1-docker.pkg.dev/group-120/mlops-group120/train:${BUILD_ID}
+
+# ------------------------------------------------------------
+# Submit Vertex AI job via config file
+# ------------------------------------------------------------
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  id: 'Submit Vertex AI job'
+  entrypoint: bash
+  args:
+    - -c
+    - |
+      gcloud ai custom-jobs create \
+        --region=europe-west1 \
+        --display-name=mlops-train-${BUILD_ID} \
+        --config=cloud_config.yaml
 
 options:
   logging: CLOUD_LOGGING_ONLY
