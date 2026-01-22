@@ -21,8 +21,12 @@ wandb/
 
 # --- Models (Ignore weights, keep code & structure) ---
 models/*
+!models/latest/best_model.pth
 !models/*.py
 !models/.gitkeep
+# --- Linting
+.ruff_cache/
+.mypy_cache/
 # --- Reports (Ignore generated figures, keep structure) ---
 reports/figures/*
 !reports/figures/.gitkeep
