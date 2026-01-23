@@ -365,11 +365,12 @@ We secured the reproducibility of our experiments by strictly controlling our en
 We used Weights & Biases to track our experiments and visualize performance. As seen in the training script, we logged the following metrics for both training and validation sets:
  Loss (CrossEntropyLoss): This is our primary objective function. Tracking both training and validation loss allows us to monitor convergence and identify overfitting (e.g., if validation loss begins to increase while training loss decreases).
 Accuracy: This gives us a high-level overview of the model's correct predictions.
-Precision, Recall, and F1 Score: Since the GTSRB dataset contains multiple classes which may be imbalanced, these metrics provide a more nuanced view of performance than simple accuracy, ensuring the model performs well across all traffic sign types.
+Precision, Recall, and F1 Score: Since the GTSRB dataset contains multiple classes which may be imbalanced, these metrics provide a more nuanced view of performance than simple accuracy, ensuring the model performs well across all traffic sign types.  The second figure (below) is a confusion matrix which is a nice way to visualize the classification model's performance and allows us to see what classes are harder to get right and what common misclassifications occur.
+
 To optimize our model, we ran a hyperparameter sweep using wandb sweep (defined in sweep.yaml) where we varied training.optimizer.lr and model.dropout. As shown in the attached figure, our limited sweep suggested that adding dropout had a generally negative effect on model performance for this architecture. Conversely, we observed a slight correlation between a higher learning rate and increased validation accuracy, although the search space was not exhaustive.
 
-The figure is of our wandb sweep dashboard were different mdetric are visuzalied for the models run during the sweep. A summary bar chart is useful for understanding the influence of the hyperparameters on val accuracy (one single metric)
-
+The first figure is of our wandb sweep dashboard were different mdetric are visuzalied for the models run during the sweep. A summary bar chart is useful for understanding the influence of the hyperparameters on val accuracy (one single metric).
+'![wandb](figures/confusion_matrix.png)'
 
 ### Question 15
 
@@ -532,7 +533,7 @@ The preprocessed image is passed through the model to generate predictions. The 
 
 The API returns a JSON response containing the predicted class, the associated probability, and the filename of the uploaded image. If the model is not loaded or an error occurs, the API returns an appropriate error message.
 
-+Nick
+On top of the fastAPI, we also made a more ML specific api with ONNX and BentoML. It is also run by invoking a task "inv serve". What is lacking is probably a better way to interact with the API, namely a more user friendly api.
 
 ### Question 24
 
@@ -553,7 +554,7 @@ We managed to deploy our API locally but were unable to deploy it in the cloud b
 Once the Docker image was built, we ran the container locally to serve the API. The API could then be invoked by sending a POST request to the /cv_model/ endpoint. To simplify the process, we implemented a task in tasks.py that allows us to run the API container with a single command. For example, the inv api task runs "uv run uvicorn src.{PROJECT_NAME}.api:app --host 0.0.0.0 --port 8000 --reload".
 
 This setup allowed us to test the API locally in a containerized environment, ensuring consistency and reproducibility. However, since we could not deploy the model in the cloud, we were unable to test the API in a cloud environment.
-+Nick
+
 
 ### Question 25
 
@@ -644,7 +645,15 @@ We did not implement additional features other that what was covered in the cour
 >
 > Answer:
 
+'![wandb](figures/Flow.png)'
 
+The starting point of our system is the local development environment, where we prioritize reproducibility and code quality. We manage dependencies using uv and a uv.lock file and version control our data with DVC. To ensure consistent coding standards, we integrated pre-commit hooks that automatically check and format our code using ruff before any commit is made. We also integrated Weights & Biases (W&B) directly into our training script, allowing us to track metrics and debug experiments locally before scaling up to the cloud.
+When code is committed and pushed to GitHub, it triggers our Continuous Integration (CI) pipeline via GitHub Actions. This runs static analysis (ruff, mypy) and unit tests (pytest) to verify system integrity.
+Upon successful testing on the main branch, Google Cloud Build is triggered to orchestrate the cloud workflow:
+It builds the Docker image using train.dockerfile and pushes it to the Google Artifact Registry.
+It executes a training job on Compute Engine resources. The WANDB_API_KEY is securely injected from Secret Manager, enabling the cloud job to log results to the same W&B project used in development.
+For deployment, we utilize a FastAPI application for standard inference and have explored BentoML for ONNX-optimized serving. All model artifacts are stored in Google Cloud Storage, referenced by our Hydra configurations.
+Project workflow visualized in the above figure.
 
 ### Question 30
 
@@ -658,12 +667,12 @@ We did not implement additional features other that what was covered in the cour
 >
 > Answer:
 
-Gen org.
-Intial writing of the model (config)
-Testing.
-docker
-version control/drive/kaggle (merge problems, data acquisiton problems)
-GCP: The biggest struggles in the project were getting everything organized and working with GCP. We spent most of our time trying to set up and configure services like Cloud Run, Vertex AI, IAM roles, and secret management. Since cloud-based MLOps was completely new to us, it took a while to understand how everything should be set up and connected. We also ran into many confusing errors, and testing in the cloud was slow due to long build times and network latency. To handle this, we relied a lot on documentation, tutorials, and testing things step by step.
+The most significant struggles in this project centered around the feedback loop latency introduced by working with Docker and the Google Cloud Platform (GCP). Setting up Docker containers was time-consuming, and validating changes in the cloud often meant waiting for long build and deployment cycles. Unlike local development, where errors are instant, diagnosing issues in GCP was difficult due to opaque logs and the time delay between a commit and a failure. This "long feedback loop" forced us to be much more meticulous before triggering a run, as "trial and error" became prohibitively expensive in terms of time.
+
+Another major pain point was the initial development and configuration phase. Implementing the model and managing its parameters via Hydra was challenging early on, particularly when combined with the need to write tests for code that was not yet mature. Writing unit tests for a codebase that was in constant flux led to friction, as tests would frequently break due to architectural changes rather than actual bugs.
+
+Finally, we faced organizational challenges typical of early-stage group projects. Initially, team members had divergent visions for the code structure, leading to compatibility issues and merge conflicts. To overcome this, we established strict coding standards and implemented a mandatory PR review process on GitHub. By ensuring every change was reviewed and discussed before merging, and by utilizing automated checks in our CI pipeline, we aligned our workflows. Over time, as the code matured and these standards became habit, the friction decreased significantly, allowing us to focus on optimizing the MLOps pipeline rather than fighting the codebase.
+
 
 ### Question 31
 
@@ -681,4 +690,5 @@ GCP: The biggest struggles in the project were getting everything organized and 
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
 
---- question 31 fill here ---
+All group members contributed equally. We often worked in person so that commit number doesn't really reflect who did what and how much they did.
+LLMs were used to udnerstand code, and to generate implementation snippets for new libraries.
