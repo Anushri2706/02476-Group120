@@ -276,7 +276,13 @@ python -m src.mlops.train training.optimizer.lr=0.001 training.batch_size=32</p>
 <em>As seen in the second image we are also tracking ... and ...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>'<img alt="wandb" src="figures/wandb.png" />'</p>
+<p>'<img alt="wandb" src="figures/wandb.png" />'
+We used Weights &amp; Biases to track our experiments and visualize performance. As seen in the training script, we logged the following metrics for both training and validation sets:
+ Loss (CrossEntropyLoss): This is our primary objective function. Tracking both training and validation loss allows us to monitor convergence and identify overfitting (e.g., if validation loss begins to increase while training loss decreases).
+Accuracy: This gives us a high-level overview of the model's correct predictions.
+Precision, Recall, and F1 Score: Since the GTSRB dataset contains multiple classes which may be imbalanced, these metrics provide a more nuanced view of performance than simple accuracy, ensuring the model performs well across all traffic sign types.
+To optimize our model, we ran a hyperparameter sweep using wandb sweep (defined in sweep.yaml) where we varied training.optimizer.lr and model.dropout. As shown in the attached figure, our limited sweep suggested that adding dropout had a generally negative effect on model performance for this architecture. Conversely, we observed a slight correlation between a higher learning rate and increased validation accuracy, although the search space was not exhaustive.</p>
+<p>The figure is of our wandb sweep dashboard were different mdetric are visuzalied for the models run during the sweep. A summary bar chart is useful for understanding the influence of the hyperparameters on val accuracy (one single metric)</p>
 <h3>Question 15</h3>
 <blockquote>
 <p><strong>Docker is an important tool for creating containerized applications. Explain how you used docker in your</strong>
@@ -287,7 +293,7 @@ python -m src.mlops.train training.optimizer.lr=0.001 training.batch_size=32</p>
 <em>training docker image: <code>docker run trainer:latest lr=1e-3 batch_size=64</code>. Link to docker file: <weblink></em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 15 fill here ---</p>
+<p>Ansuhri</p>
 <h3>Question 16</h3>
 <blockquote>
 <p><strong>When running into bugs while trying to run your experiments, how did you perform debugging? Additionally, did you</strong>
@@ -298,7 +304,8 @@ python -m src.mlops.train training.optimizer.lr=0.001 training.batch_size=32</p>
 <em>run of our main code at some point that showed ...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 16 fill here ---</p>
+<p>Debugging strategies varied among team members. We primarily relied on logging to track variable states and breakpoints for interactive inspection. To accelerate debugging cycles, specifically for testing pipelines that run after training, we often reduced the dataset size or trained for a single epoch to bypass long training times. We also utilized pair programming (a "rubber duck" approach), where one member wrote code while others reviewed logic in real-time to catch errors early.</p>
+<p>Regarding profiling, we did not assume our code was perfect. We implemented a dedicated benchmarking script (src/mlops/benchmarking.py) to profile our model's inference performance. This script measures and compares inference latency and model size across different optimization techniques, specifically testing standard, pruned, and quantized versions of the model. This allowed us to quantitatively assess the speedups and compression rates achieved, rather than relying on assumptions.</p>
 <h2>Working in the cloud</h2>
 <blockquote>
 <p>In the following section we would like to know more about your experience when developing in the cloud.</p>
@@ -311,7 +318,7 @@ python -m src.mlops.train training.optimizer.lr=0.001 training.batch_size=32</p>
 <em>We used the following two services: Engine and Bucket. Engine is used for... and Bucket is used for...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 17 fill here ---</p>
+<p>Anushri</p>
 <h3>Question 18</h3>
 <blockquote>
 <p><strong>The backbone of GCP is the Compute engine. Explained how you made use of this service and what type of VMs</strong>
@@ -322,28 +329,28 @@ python -m src.mlops.train training.optimizer.lr=0.001 training.batch_size=32</p>
 <em>using a custom container: ...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 18 fill here ---</p>
+<p>Anushri</p>
 <h3>Question 19</h3>
 <blockquote>
 <p><strong>Insert 1-2 images of your GCP bucket, such that we can see what data you have stored in it.</strong>
 <strong>You can take inspiration from <a href="figures/bucket.png">this figure</a>.</strong></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 19 fill here ---</p>
+<p>Anushri/Toma</p>
 <h3>Question 20</h3>
 <blockquote>
 <p><strong>Upload 1-2 images of your GCP artifact registry, such that we can see the different docker images that you have</strong>
 <strong>stored. You can take inspiration from <a href="figures/registry.png">this figure</a>.</strong></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 20 fill here ---</p>
+<p>Anushri</p>
 <h3>Question 21</h3>
 <blockquote>
 <p><strong>Upload 1-2 images of your GCP cloud build history, so we can see the history of the images that have been build in</strong>
 <strong>your project. You can take inspiration from <a href="figures/build.png">this figure</a>.</strong></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 21 fill here ---</p>
+<p>Anushri</p>
 <h3>Question 22</h3>
 <blockquote>
 <p><strong>Did you manage to train your model in the cloud using either the Engine or Vertex AI? If yes, explain how you did</strong>
@@ -354,7 +361,7 @@ python -m src.mlops.train training.optimizer.lr=0.001 training.batch_size=32</p>
 <em>was because ...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 22 fill here ---</p>
+<p>Anushri(sad)</p>
 <h2>Deployment</h2>
 <h3>Question 23</h3>
 <blockquote>
@@ -366,7 +373,13 @@ python -m src.mlops.train training.optimizer.lr=0.001 training.batch_size=32</p>
 <em>to the API to make it more ...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 23 fill here ---</p>
+<p>We did manage to write an API for our model using FastAPI. The API is designed to handle image classification tasks.</p>
+<p>First, the API accepts an image file through a POST request to the /cv_model/ endpoint. The image is uploaded as a file and read into memory.</p>
+<p>During the API's initialization, the latest trained model is loaded. The model's configuration and weights are retrieved from a checkpoint file (best_model.pth) stored in the latest directory. Hydra is used to manage the configuration, ensuring that the model is instantiated with the correct architecture and parameters.</p>
+<p>The uploaded image is preprocessed to match the input size expected by the model. This includes resizing the image to the dimensions specified in the model's configuration and converting it into a tensor.</p>
+<p>The preprocessed image is passed through the model to generate predictions. The model outputs class probabilities, and the API extracts the class with the highest probability.</p>
+<p>The API returns a JSON response containing the predicted class, the associated probability, and the filename of the uploaded image. If the model is not loaded or an error occurs, the API returns an appropriate error message.</p>
+<p>+Nick</p>
 <h3>Question 24</h3>
 <blockquote>
 <p><strong>Did you manage to deploy your API, either in locally or cloud? If not, describe why. If yes, describe how and</strong>
@@ -378,7 +391,10 @@ python -m src.mlops.train training.optimizer.lr=0.001 training.batch_size=32</p>
 <em><code>curl -X POST -F "file=@file.json"&lt;weburl&gt;</code></em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 24 fill here ---</p>
+<p>We managed to deploy our API locally but were unable to deploy it in the cloud because we could not run the model in the cloud. For deployment, we implemented the API in Docker. We created a Docker image containing the API endpoint, which is defined in api.py. The Dockerfile for the API ensures that all dependencies are installed, and the FastAPI application is properly configured.</p>
+<p>Once the Docker image was built, we ran the container locally to serve the API. The API could then be invoked by sending a POST request to the /cv_model/ endpoint. To simplify the process, we implemented a task in tasks.py that allows us to run the API container with a single command. For example, the inv api task runs "uv run uvicorn src.{PROJECT_NAME}.api:app --host 0.0.0.0 --port 8000 --reload".</p>
+<p>This setup allowed us to test the API locally in a containerized environment, ensuring consistency and reproducibility. However, since we could not deploy the model in the cloud, we were unable to test the API in a cloud environment.
++Nick</p>
 <h3>Question 25</h3>
 <blockquote>
 <p><strong>Did you perform any unit testing and load testing of your API? If yes, explain how you did it and what results for</strong>
@@ -389,7 +405,10 @@ python -m src.mlops.train training.optimizer.lr=0.001 training.batch_size=32</p>
 <em>before the service crashed.</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 25 fill here ---</p>
+<p>We performed both unit and load testing of our API.</p>
+<p>For unit testing, we used pytest and FastAPI's TestClient. The tests in test_api.py include validating the /cv_model/ endpoint with a valid PNG image to ensure proper handling of requests, verifying a 422 error for missing files, and testing non-image payloads to confirm graceful error handling. Since the model is not loaded in the test environment, we also confirmed that the API returns a 500 status code and an appropriate error message ("Model not loaded. Check server logs.") when the model is unavailable.
+We performed load testing of our API using Locust. The load testing script is defined in locustfile.py, where we simulate multiple users sending POST requests to the /cv_model/ endpoint with randomly generated 64x64 PNG images. The TARGET_HOST environment variable allows us to dynamically specify the API's host during testing.</p>
+<p>For the test, we used the same load parameters as described in the course: 10 users with a ramp-up rate of 1 user per second and a total runtime of 1 minute. The results showed that the API handled all requests successfully without any failures.</p>
 <h3>Question 26</h3>
 <blockquote>
 <p><strong>Did you manage to implement monitoring of your deployed model? If yes, explain how it works. If not, explain how</strong>
@@ -400,7 +419,7 @@ python -m src.mlops.train training.optimizer.lr=0.001 training.batch_size=32</p>
 <em>measure ... and ... that would inform us about this ... behaviour of our application.</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 26 fill here ---</p>
+<p>Brandon</p>
 <h2>Overall discussion of project</h2>
 <blockquote>
 <p>In the following section we would like you to think about the general structure of your project.</p>
@@ -427,7 +446,7 @@ python -m src.mlops.train training.optimizer.lr=0.001 training.batch_size=32</p>
 <em>implemented using ...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 28 fill here ---</p>
+<p>BRandon</p>
 <h3>Question 29</h3>
 <blockquote>
 <p><strong>Include a figure that describes the overall architecture of your system and what services that you make use of.</strong>
@@ -439,7 +458,7 @@ python -m src.mlops.train training.optimizer.lr=0.001 training.batch_size=32</p>
 <em>Whenever we commit code and push to GitHub, it auto triggers ... and ... . From there the diagram shows ...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 29 fill here ---</p>
+<p>'<img alt="wandb" src="figures/Flow.png" />'</p>
 <h3>Question 30</h3>
 <blockquote>
 <p><strong>Discuss the overall struggles of the project. Where did you spend most time and what did you do to overcome these</strong>
@@ -449,7 +468,12 @@ python -m src.mlops.train training.optimizer.lr=0.001 training.batch_size=32</p>
 <em>The biggest challenges in the project was using ... tool to do ... . The reason for this was ...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>--- question 30 fill here ---</p>
+<p>Gen org.
+Intial writing of the model (config)
+Testing.
+docker
+version control/drive/kaggle (merge problems, data acquisiton problems)
+GCP</p>
 <h3>Question 31</h3>
 <blockquote>
 <p><strong>State the individual contributions of each team member. This is required information from DTU, because we need to</strong>
