@@ -384,7 +384,7 @@ The figure is of our wandb sweep dashboard were different mdetric are visuzalied
 >
 > Answer:
 
---- question 15 fill here ---
+Ansuhri
 
 ### Question 16
 
@@ -419,7 +419,7 @@ Regarding profiling, we did not assume our code was perfect. We implemented a de
 >
 > Answer:
 
---- question 17 fill here ---
+Anushri
 
 ### Question 18
 
@@ -434,7 +434,7 @@ Regarding profiling, we did not assume our code was perfect. We implemented a de
 >
 > Answer:
 
---- question 18 fill here ---
+Anushri
 
 ### Question 19
 
@@ -443,7 +443,7 @@ Regarding profiling, we did not assume our code was perfect. We implemented a de
 >
 > Answer:
 
---- question 19 fill here ---
+Anushri/Toma
 
 ### Question 20
 
@@ -452,7 +452,7 @@ Regarding profiling, we did not assume our code was perfect. We implemented a de
 >
 > Answer:
 
---- question 20 fill here ---
+Anushri
 
 ### Question 21
 
@@ -461,7 +461,7 @@ Regarding profiling, we did not assume our code was perfect. We implemented a de
 >
 > Answer:
 
---- question 21 fill here ---
+Anushri
 
 ### Question 22
 
@@ -476,7 +476,7 @@ Regarding profiling, we did not assume our code was perfect. We implemented a de
 >
 > Answer:
 
---- question 22 fill here ---
+Anushri(sad)
 
 ## Deployment
 
@@ -505,6 +505,8 @@ The preprocessed image is passed through the model to generate predictions. The 
 
 The API returns a JSON response containing the predicted class, the associated probability, and the filename of the uploaded image. If the model is not loaded or an error occurs, the API returns an appropriate error message.
 
++Nick
+
 ### Question 24
 
 > **Did you manage to deploy your API, either in locally or cloud? If not, describe why. If yes, describe how and**
@@ -524,6 +526,7 @@ We managed to deploy our API locally but were unable to deploy it in the cloud b
 Once the Docker image was built, we ran the container locally to serve the API. The API could then be invoked by sending a POST request to the /cv_model/ endpoint. To simplify the process, we implemented a task in tasks.py that allows us to run the API container with a single command. For example, the inv api task runs "uv run uvicorn src.{PROJECT_NAME}.api:app --host 0.0.0.0 --port 8000 --reload".
 
 This setup allowed us to test the API locally in a containerized environment, ensuring consistency and reproducibility. However, since we could not deploy the model in the cloud, we were unable to test the API in a cloud environment.
++Nick
 
 ### Question 25
 
@@ -558,7 +561,7 @@ For the test, we used the same load parameters as described in the course: 10 us
 >
 > Answer:
 
---- question 26 fill here ---
+Brandon
 
 ## Overall discussion of project
 
@@ -593,7 +596,7 @@ For the test, we used the same load parameters as described in the course: 10 us
 >
 > Answer:
 
---- question 28 fill here ---
+BRandon
 
 ### Question 29
 
@@ -610,7 +613,7 @@ For the test, we used the same load parameters as described in the course: 10 us
 >
 > Answer:
 
---- question 29 fill here ---
+
 
 ### Question 30
 
@@ -624,7 +627,12 @@ For the test, we used the same load parameters as described in the course: 10 us
 >
 > Answer:
 
---- question 30 fill here ---
+Gen org.
+Intial writing of the model (config)
+Testing.
+docker
+version control/drive/kaggle (merge problems, data acquisiton problems)
+GCP
 
 ### Question 31
 
