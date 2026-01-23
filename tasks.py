@@ -79,3 +79,8 @@ def api(ctx: Context) -> None:
     ctx.run(
         f"uv run uvicorn src.{PROJECT_NAME}.api:app --host 0.0.0.0 --port 8000 --reload", echo=True, pty=not WINDOWS
     )
+
+@task
+def serve_bento(ctx: Context) -> None:
+    """Serve the BentoML application."""
+    ctx.run(f"uv run bentoml serve src.{PROJECT_NAME}.bentoml_service:ImageClassifierService", echo=True, pty=not WINDOWS)

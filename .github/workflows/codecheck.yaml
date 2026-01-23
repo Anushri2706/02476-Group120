@@ -39,9 +39,11 @@ jobs:
         uv run ruff check .
 
     - name: Check formatting with ruff
+      if: success() || failure() # Runs if previous step succeeded OR failed
       run: |
         uv run ruff format --check .
 
     - name: Type checking with mypy
+      if: success() || failure() # Runs if previous steps succeeded OR failed
       run: |
         uv run mypy .
