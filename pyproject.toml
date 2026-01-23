@@ -47,6 +47,8 @@ dependencies = [
     "onnx>=1.20.1",
     "bentoml>=1.4.33",
     "onnxruntime>=1.23.2",
+    "inv>=0.1.0",
+    "invoke>=2.2.0",
 ]
 
 # Optional dependency groups. The 'dev' group includes tools for development
