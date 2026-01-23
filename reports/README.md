@@ -228,7 +228,7 @@ In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, 
 >
 > Answer:
 
-We have implemented 9 tests across three modules to ensure the reliability of our application.
+We have implemented 7 tests across three modules to ensure the reliability of our application.
 
 For the data module (test_data.py), we have 3 tests that verify the dataset class can correctly load data, checks the properties of the loaded data (like length and content), and handles missing files gracefully.
 
