@@ -45,6 +45,8 @@ dependencies = [
     "locust>=2.43.1",
     "google-cloud-storage",
     "gcsfs>=2026.1.0",
+    "google-cloud>=0.34.0",
+    "storage>=0.0.4.3",
 ]
 
 # Optional dependency groups. The 'dev' group includes tools for development

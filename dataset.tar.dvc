@@ -1,0 +1,9 @@
+outs:
+- md5: 36283f0be548600ddd7b09efd2a87a68
+  size: 354211840
+  hash: md5
+  path: dataset.tar
+  cloud:
+    remote_storage:
+      etag: 08ebaebb82f8a192031001
+      version_id: '1769180786251627'

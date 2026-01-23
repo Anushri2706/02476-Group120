@@ -12,10 +12,10 @@ from torchmetrics import MetricCollection, MeanMetric
 from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall, MulticlassF1Score
 import wandb
 from omegaconf import OmegaConf
-from google.cloud import storage
 import torch 
+from pathlib import Path
+import gcsfs
 
-# Assuming your GTSRB class is in a file named `dataset.py`
 from .data.dataset import GTSRB
 from .model import TinyCNN
 
@@ -27,19 +27,42 @@ logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
 )
 
+
+def download(raw_dir: str, local_dir: Path, fs):
+    for f in fs.find(raw_dir): # raw_dir = cfg.cloud.data_gcs.raw_dir 
+        relative = f.replace(raw_dir, "").lstrip("/") 
+        destination = local_dir/ relative
+        destination.parent.mkdir(parents= True, exist_ok = True)
+        fs.get(f, str(destination))
+
 @hydra.main(config_path="../../configshydra", config_name="config", version_base="1.2")
 def main(cfg: DictConfig):
+
+    Cloud_dir = Path("tmp/data")
+    Cloud_raw_dir = Cloud_dir / "raw"
+    Cloud_processed_dir = Cloud_dir / "processed"
+
+    fs = gcsfs.GCSFileSystem()
+
     #models dir
     wandb.init(
         project=cfg.wandb.project_name, 
         entity=cfg.wandb.team_name,
         # Convert Hydra config to a standard Python dict for W&B
-        config=OmegaConf.to_container(cfg, resolve=True, throw_on_missing=True),
+        config=OmegaConf.to_container(cfg, resolve=True),
         job_type="train" 
     )
-    model_dir = hydra.utils.to_absolute_path(cfg.paths.models)
+    
+
+    model_dir = hydra.utils.to_absolute_path(cfg.cloud.model_gcs.bucket)
 
     output_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
+
+    download(cfg.cloud.data_gcs.raw_dir, Cloud_raw_dir, fs)
+    download(cfg.cloud.data_gcs.processed_dir, Cloud_processed_dir, fs)
+    log.info("Data downloaded")
+
+
     # 1. Define Transforms
     # We must resize images to the same size so they can be stacked into a batch tensor.
     #make image size configurable
@@ -48,15 +71,15 @@ def main(cfg: DictConfig):
 
     # 2. Initialize Datasets using paths from Hydra config
     train_ds = GTSRB(
-        raw_dir=hydra.utils.to_absolute_path(cfg.cloud.data_gcs.raw_dir),
-        processed_dir=hydra.utils.to_absolute_path(cfg.cloud.data_gcs.processed_dir),
+        raw_dir=Cloud_raw_dir,
+        processed_dir=Cloud_processed_dir,
         mode="train",
         transform=transform,
     )
 
     val_ds = GTSRB(
-        raw_dir=hydra.utils.to_absolute_path(cfg.cloud.data_gcs.raw_dir),
-        processed_dir=hydra.utils.to_absolute_path(cfg.cloud.data_gcs.processed_dir),
+        raw_dir=Cloud_raw_dir,
+        processed_dir=Cloud_processed_dir,
         mode="val",
         transform=transform,
     )
@@ -177,12 +200,8 @@ def main(cfg: DictConfig):
     # # Save the checkpoint dict (preserves config)
     # torch.save(checkpoint, latest_save_path)
 
-        # ==================================================
     # FINAL STEP: UPLOAD TRAINED MODEL TO GCS (MANDATORY)
-    # ==================================================
-    # ==================================================
-    # FINAL STEP: UPLOAD TRAINED MODEL TO GCS (MANDATORY)
-    # ==================================================
+
     log.info("Starting model upload to GCS...")
 
     local_model_path = "/tmp/model.pth"
