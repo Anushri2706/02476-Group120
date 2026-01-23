@@ -1,10 +1,12 @@
-import pytest
 from pathlib import Path
+
 import pandas as pd
-from torch.utils.data import Dataset
+import pytest
 from PIL import Image
+from torch.utils.data import Dataset
 
 from src.mlops.data.dataset import GTSRB
+
 
 # 1. Setup: Create a fake data folder with predictable data
 @pytest.fixture
@@ -24,12 +26,13 @@ def dummy_data_path(tmp_path: Path) -> tuple[Path, Path]:
     pd.DataFrame({"Path": [f"img_{i}.png" for i in range(5)], "ClassId": range(5)}).to_csv(
         processed_dir / "test.csv", index=False
     )
-    
+
     # Create dummy image files (the test doesn't need to open them, but the dataset class expects them to exist)
     for i in range(20):
         Image.new("RGB", (32, 32)).save(raw_dir / f"img_{i}.png")
 
     return raw_dir, processed_dir
+
 
 # 2. The Test: Check lengths, shapes, and label completeness
 def test_dataset_properties(dummy_data_path: tuple[Path, Path]):
@@ -37,7 +40,7 @@ def test_dataset_properties(dummy_data_path: tuple[Path, Path]):
 
     # --- Test Training Set ---
     train_dataset = GTSRB(raw_dir=raw_dir, processed_dir=processed_dir, mode="train")
-    
+
     # Check length
     assert len(train_dataset) == 20
 
@@ -56,6 +59,7 @@ def test_dataset_properties(dummy_data_path: tuple[Path, Path]):
     assert len(test_dataset) == 5
     test_labels_in_dataset = {sample[1] for sample in test_dataset.samples}
     assert test_labels_in_dataset == set(range(5))
+
 
 def test_file_not_found(dummy_data_path: tuple[Path, Path]):
     """Tests that FileNotFoundError is raised for a missing CSV."""
