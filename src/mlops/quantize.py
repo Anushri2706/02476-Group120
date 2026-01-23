@@ -6,6 +6,14 @@ from .model import TinyCNN
 def load_quantized_model(checkpoint_path: str, num_classes: int, device: str = "cpu"):
     """
     Load TinyCNN model and apply dynamic quantization
+
+        Args:
+            checkpoint_path: Path to trained model checkpoint (.pth)
+            num_classes: Number of output classes
+            device: Device to load the model onto ("cpu" or "cuda")
+
+        Returns:
+            Quantized model ready for inference
     """
 
     # 1. Load checkpoint

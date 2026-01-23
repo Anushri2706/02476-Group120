@@ -8,6 +8,14 @@ from mlops.inference import load_inference_model
 def benchmark(model: torch.nn.Module, x: torch.Tensor, n: int = 100) -> float:
     """
     Measure average inference latency in seconds.
+
+        Args:
+            model: The PyTorch model to benchmark.
+            x: Input tensor to the model.
+            n: Number of runs to average over.
+
+        Returns:
+            Average inference time in seconds.
     """
     model.eval()
     with torch.inference_mode():
@@ -28,9 +36,7 @@ def get_size_mb(path: str) -> float:
 
 
 def main():
-    # -------------------------
     # Configuration
-    # -------------------------
     checkpoint_path = "models/latest/best_model.pth"
     num_classes = 43
     input_shape = (1, 3, 64, 64)
@@ -92,9 +98,8 @@ def main():
 
     results["quantized"] = (quant_time, quant_size)
 
-    # -------------------------
+
     # 4. Pruned + Quantized model
-    # -------------------------
     pq_model = load_inference_model(
         checkpoint_path=checkpoint_path,
         num_classes=num_classes,
@@ -111,7 +116,7 @@ def main():
     results["pruned+quantized"] = (pq_time, pq_size)
 
 
-    # Print results
+    # Results
     print("\n=========   Inference Results   ==========")
 
     for name, (latency, size) in results.items():
