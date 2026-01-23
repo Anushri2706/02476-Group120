@@ -1,11 +1,13 @@
-import torch
 import pytest
+import torch
+
 from src.mlops.model import TinyCNN
+
 
 @pytest.mark.parametrize(
     "batch_size, num_classes, height, width",
     [
-        (1, 43, 64, 64),   # Single image
+        (1, 43, 64, 64),  # Single image
         (32, 43, 64, 64),  # A full batch
     ],
 )
