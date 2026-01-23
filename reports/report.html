@@ -39,8 +39,8 @@ will check the repositories and the code to verify your answers.</p>
 <li>[x] Add a model to <code>model.py</code> and a training procedure to <code>train.py</code> and get that running (M6)</li>
 <li>[x] Remember to either fill out the <code>requirements.txt</code>/<code>requirements_dev.txt</code> files or keeping your
     <code>pyproject.toml</code>/<code>uv.lock</code> up-to-date with whatever dependencies that you are using (M2+M6)</li>
-<li>[EASY] Remember to comply with good coding practices (<code>pep8</code>) while doing the project (M7)</li>
-<li>[EASY] Do a bit of code typing and remember to document essential parts of your code (M7)</li>
+<li>[x] Remember to comply with good coding practices (<code>pep8</code>) while doing the project (M7)</li>
+<li>[x] Do a bit of code typing and remember to document essential parts of your code (M7)</li>
 <li>[x] Setup version control for your data or part of your data (M8)</li>
 <li>[x] Add command line interfaces and project commands to your code where it makes sense (M9)</li>
 <li>[x] Construct one or multiple docker files for your code (M10)</li>
@@ -59,20 +59,20 @@ will check the repositories and the code to verify your answers.</p>
 <li>[x] Write unit tests related to model construction and or model training (M16)</li>
 <li>[x] Calculate the code coverage (M16)</li>
 <li>[x] Get some continuous integration running on the GitHub repository (M17)</li>
-<li>[x-] Add caching and multi-os/python/pytorch testing to your continuous integration (M17)</li>
+<li>[x] Add caching and multi-os/python/pytorch testing to your continuous integration (M17)</li>
 <li>[x] Add a linting step to your continuous integration (M17)</li>
 <li>[x] Add pre-commit hooks to your version control setup (M18)</li>
-<li>[] Add a continues workflow that triggers when data changes (M19)</li>
-<li>[] Add a continues workflow that triggers when changes to the model registry is made (M19)</li>
+<li>[ ] Add a continues workflow that triggers when data changes (M19)</li>
+<li>[ ] Add a continues workflow that triggers when changes to the model registry is made (M19)</li>
 <li>[x] Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21)</li>
 <li>[x] Create a trigger workflow for automatically building your docker images (M21)</li>
-<li>[TODO] Get your model training in GCP using either the Engine or Vertex AI (M21)</li>
+<li>[50%] Get your model training in GCP using either the Engine or Vertex AI (M21)</li>
 <li>[x] Create a FastAPI application that can do inference using your model (M22)</li>
-<li>[TODO] Deploy your model in GCP using either Functions or Run as the backend (M23)</li>
+<li>[x] Deploy your model in GCP using either Functions or Run as the backend (M23)</li>
 <li>[x] Write API tests for your application and setup continues integration for these (M24)</li>
 <li>[x] Load test your application (M24)</li>
 <li>[x] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)</li>
-<li>[TODO] Create a frontend for your API (M26)</li>
+<li>[] Create a frontend for your API (M26)</li>
 </ul>
 <h3>Week 3</h3>
 <ul>
@@ -90,10 +90,10 @@ will check the repositories and the code to verify your answers.</p>
 <ul>
 <li>[ ] Write some documentation for your application (M32)</li>
 <li>[ ] Publish the documentation to GitHub Pages (M32)</li>
-<li>[ ] Revisit your initial project description. Did the project turn out as you wanted?</li>
-<li>[ ] Create an architectural diagram over your MLOps pipeline</li>
-<li>[ ] Make sure all group members have an understanding about all parts of the project</li>
-<li>[ ] Uploaded all your code to GitHub</li>
+<li>[x] Revisit your initial project description. Did the project turn out as you wanted?</li>
+<li>[x] Create an architectural diagram over your MLOps pipeline</li>
+<li>[x] Make sure all group members have an understanding about all parts of the project</li>
+<li>[x] Uploaded all your code to GitHub</li>
 </ul>
 <h2>Group information</h2>
 <h3>Question 1</h3>
@@ -166,7 +166,7 @@ Verify: python -V and uv pip list</p>
 <em>concepts are important in larger projects because ... . For example, typing ...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>We used ruff format the format our .py files. and also tried to follow the PEP8 styling guide whereever possible (naming classes and functions, line length, etc.).  </p>
+<p>We used ruff to format and lint our .py files which ensures that we maintain a consistent coding style across the project. From our pyproject.toml file, we configured ruff to have a maximum line length of 120 characters. We also tried to follow the PEP8 Python styling guide wherever possible (naming classes and functions, line length, etc.).</p>
 <p>These concepts are important in larger projects as it makes it easier for other members in the group to read and understand the code. Furthermore, having consistent formatting and linting ensures that all members of the project follow the same conventions. As a result, collaboration is improved and code reviews are less tedious and more efficient.</p>
 <h2>Version control</h2>
 <blockquote>
@@ -280,9 +280,10 @@ python -m src.mlops.train training.optimizer.lr=0.001 training.batch_size=32</p>
 We used Weights &amp; Biases to track our experiments and visualize performance. As seen in the training script, we logged the following metrics for both training and validation sets:
  Loss (CrossEntropyLoss): This is our primary objective function. Tracking both training and validation loss allows us to monitor convergence and identify overfitting (e.g., if validation loss begins to increase while training loss decreases).
 Accuracy: This gives us a high-level overview of the model's correct predictions.
-Precision, Recall, and F1 Score: Since the GTSRB dataset contains multiple classes which may be imbalanced, these metrics provide a more nuanced view of performance than simple accuracy, ensuring the model performs well across all traffic sign types.
-To optimize our model, we ran a hyperparameter sweep using wandb sweep (defined in sweep.yaml) where we varied training.optimizer.lr and model.dropout. As shown in the attached figure, our limited sweep suggested that adding dropout had a generally negative effect on model performance for this architecture. Conversely, we observed a slight correlation between a higher learning rate and increased validation accuracy, although the search space was not exhaustive.</p>
-<p>The figure is of our wandb sweep dashboard were different mdetric are visuzalied for the models run during the sweep. A summary bar chart is useful for understanding the influence of the hyperparameters on val accuracy (one single metric)</p>
+Precision, Recall, and F1 Score: Since the GTSRB dataset contains multiple classes which may be imbalanced, these metrics provide a more nuanced view of performance than simple accuracy, ensuring the model performs well across all traffic sign types.  The second figure (below) is a confusion matrix which is a nice way to visualize the classification model's performance and allows us to see what classes are harder to get right and what common misclassifications occur.</p>
+<p>To optimize our model, we ran a hyperparameter sweep using wandb sweep (defined in sweep.yaml) where we varied training.optimizer.lr and model.dropout. As shown in the attached figure, our limited sweep suggested that adding dropout had a generally negative effect on model performance for this architecture. Conversely, we observed a slight correlation between a higher learning rate and increased validation accuracy, although the search space was not exhaustive.</p>
+<p>The first figure is of our wandb sweep dashboard were different mdetric are visuzalied for the models run during the sweep. A summary bar chart is useful for understanding the influence of the hyperparameters on val accuracy (one single metric).
+'<img alt="wandb" src="figures/confusion_matrix.png" />'</p>
 <h3>Question 15</h3>
 <blockquote>
 <p><strong>Docker is an important tool for creating containerized applications. Explain how you used docker in your</strong>
@@ -293,7 +294,14 @@ To optimize our model, we ran a hyperparameter sweep using wandb sweep (defined 
 <em>training docker image: <code>docker run trainer:latest lr=1e-3 batch_size=64</code>. Link to docker file: <weblink></em></p>
 <p>Answer:</p>
 </blockquote>
-<p>Ansuhri</p>
+<p>We created two separate Docker images to keep the training and inference parts of the project independent:
+1. Dockerfile.train is used for preprocessing the data and training the model.
+2. Dockerfile.api is only used for inference and hosts the trained model through an API.</p>
+<p>The dataset is stored in a Google Cloud Storage bucket. From there, it is downloaded for preprocessing, where the data is split into training and validation sets. The processed CSV files are then uploaded back to the same bucket so they can be reused later.</p>
+<p>Originally, we planned to use a second storage bucket to store the best trained model and load it dynamically for inference. However, due to time constraints, this was not fully implemented. Instead, the best model is saved locally and copied directly into the API Docker image. This still allows the API to run inference correctly while keeping the training and inference steps clearly separated.</p>
+<p>Link to api dockerfile: <a href="https://github.com/Anushri2706/02476-Group120/blob/main/dockerfiles/api.dockerfile%20">API</a></p>
+<p>To build: Docker build -f dockerfiles/Dockerfile.api api:latest . 
+To run: Docker run api:latest</p>
 <h3>Question 16</h3>
 <blockquote>
 <p><strong>When running into bugs while trying to run your experiments, how did you perform debugging? Additionally, did you</strong>
@@ -318,7 +326,13 @@ To optimize our model, we ran a hyperparameter sweep using wandb sweep (defined 
 <em>We used the following two services: Engine and Bucket. Engine is used for... and Bucket is used for...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>Anushri</p>
+<p>We used the following GCP services in our project:
+1. Compute Engine: Used to run virtual machines for development and executing Docker containers during training.
+2. Cloud Storage (Storage Bucket): Used to store the raw dataset as well as the preprocessed CSV files generated after data preprocessing.
+3. Vertex AI: Used to train our machine learning model using managed training infrastructure.
+4. Artifact Registry: Used to store and manage Docker images for both training and inference services.
+5. Cloud Run: Used to deploy and run our containerized inference API in a serverless environment.
+6. Secret Manager: Used to securely store and access sensitive information such as the Weights &amp; Biases (WandB) API key.</p>
 <h3>Question 18</h3>
 <blockquote>
 <p><strong>The backbone of GCP is the Compute engine. Explained how you made use of this service and what type of VMs</strong>
@@ -329,28 +343,33 @@ To optimize our model, we ran a hyperparameter sweep using wandb sweep (defined 
 <em>using a custom container: ...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>Anushri</p>
+<p>Compute Engine was initially explored during the project to understand how virtual machines (VMs) work in GCP. We created VM instances, such as an e2-medium instance, to experiment with different configurations and see how factors like machine type and region affect pricing and performance.</p>
+<p>In the end, Compute Engine was not used in the final setup. Instead, we chose to use more managed services such as Vertex AI for model training and Cloud Run for deploying the inference API. These services allowed us to run our workloads without having to manage VMs manually.</p>
+<p>Even though Compute Engine was not part of the final system, using it during the project helped us understand how compute resources are provisioned in GCP and how VMs differ from container-based and serverless solutions. This made it easier for us to choose the services that best fit our project requirements.</p>
 <h3>Question 19</h3>
 <blockquote>
 <p><strong>Insert 1-2 images of your GCP bucket, such that we can see what data you have stored in it.</strong>
 <strong>You can take inspiration from <a href="figures/bucket.png">this figure</a>.</strong></p>
 <p>Answer:</p>
 </blockquote>
-<p>Anushri/Toma</p>
+<p><a href="figures/storagebucket.png">Storage Bucket</a>
+<a href="figures/trafficSignData.png">Traffic-Sign-Data</a></p>
 <h3>Question 20</h3>
 <blockquote>
 <p><strong>Upload 1-2 images of your GCP artifact registry, such that we can see the different docker images that you have</strong>
 <strong>stored. You can take inspiration from <a href="figures/registry.png">this figure</a>.</strong></p>
 <p>Answer:</p>
 </blockquote>
-<p>Anushri</p>
+<p><a href="figures/ArtifactRegistry.png">ArtifactRegistry</a>
+<a href="figures/TrainImage.png">Train-Image</a></p>
 <h3>Question 21</h3>
 <blockquote>
 <p><strong>Upload 1-2 images of your GCP cloud build history, so we can see the history of the images that have been build in</strong>
 <strong>your project. You can take inspiration from <a href="figures/build.png">this figure</a>.</strong></p>
 <p>Answer:</p>
 </blockquote>
-<p>Anushri</p>
+<p><a href="figures/BuildHistory.png">Build-History</a>
+<a href="figures/BuildSummary.png">Build-Summary</a></p>
 <h3>Question 22</h3>
 <blockquote>
 <p><strong>Did you manage to train your model in the cloud using either the Engine or Vertex AI? If yes, explain how you did</strong>
@@ -361,7 +380,9 @@ To optimize our model, we ran a hyperparameter sweep using wandb sweep (defined 
 <em>was because ...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>Anushri(sad)</p>
+<p>We were able to partially train our model in the cloud, but we did not manage to complete the full training process using Vertex AI. We successfully built and pushed our containers and ran them using Cloud Run during the build phase. This allowed us to run the data preprocessing in the cloud, where we processed the data and stored the results back in cloud storage.</p>
+<p>We also managed to create a custom training job in Vertex AI and set up the required configuration for it. However, we were not able to successfully run the actual model training. We encountered several issues related to secret management and authentication, which caused errors during execution. Since working with Vertex AI and cloud-based training was a new concept for us, it also took a long time to understand how the initial setup and configuration should be done.</p>
+<p>Debugging and testing these issues was time-consuming, especially because cloud testing is slower due to network latency. Due to the limited time available for the project, we were not able to fully identify and fix the root cause of the issues, so the final training step remained incomplete.</p>
 <h2>Deployment</h2>
 <h3>Question 23</h3>
 <blockquote>
@@ -379,7 +400,7 @@ To optimize our model, we ran a hyperparameter sweep using wandb sweep (defined 
 <p>The uploaded image is preprocessed to match the input size expected by the model. This includes resizing the image to the dimensions specified in the model's configuration and converting it into a tensor.</p>
 <p>The preprocessed image is passed through the model to generate predictions. The model outputs class probabilities, and the API extracts the class with the highest probability.</p>
 <p>The API returns a JSON response containing the predicted class, the associated probability, and the filename of the uploaded image. If the model is not loaded or an error occurs, the API returns an appropriate error message.</p>
-<p>+Nick</p>
+<p>On top of the fastAPI, we also made a more ML specific api with ONNX and BentoML. It is also run by invoking a task "inv serve". What is lacking is probably a better way to interact with the API, namely a more user friendly api.</p>
 <h3>Question 24</h3>
 <blockquote>
 <p><strong>Did you manage to deploy your API, either in locally or cloud? If not, describe why. If yes, describe how and</strong>
@@ -393,8 +414,7 @@ To optimize our model, we ran a hyperparameter sweep using wandb sweep (defined 
 </blockquote>
 <p>We managed to deploy our API locally but were unable to deploy it in the cloud because we could not run the model in the cloud. For deployment, we implemented the API in Docker. We created a Docker image containing the API endpoint, which is defined in api.py. The Dockerfile for the API ensures that all dependencies are installed, and the FastAPI application is properly configured.</p>
 <p>Once the Docker image was built, we ran the container locally to serve the API. The API could then be invoked by sending a POST request to the /cv_model/ endpoint. To simplify the process, we implemented a task in tasks.py that allows us to run the API container with a single command. For example, the inv api task runs "uv run uvicorn src.{PROJECT_NAME}.api:app --host 0.0.0.0 --port 8000 --reload".</p>
-<p>This setup allowed us to test the API locally in a containerized environment, ensuring consistency and reproducibility. However, since we could not deploy the model in the cloud, we were unable to test the API in a cloud environment.
-+Nick</p>
+<p>This setup allowed us to test the API locally in a containerized environment, ensuring consistency and reproducibility. However, since we could not deploy the model in the cloud, we were unable to test the API in a cloud environment.</p>
 <h3>Question 25</h3>
 <blockquote>
 <p><strong>Did you perform any unit testing and load testing of your API? If yes, explain how you did it and what results for</strong>
@@ -419,7 +439,9 @@ We performed load testing of our API using Locust. The load testing script is de
 <em>measure ... and ... that would inform us about this ... behaviour of our application.</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>Brandon</p>
+<p>We did not implement monitoring of the deployed model. However, implementing monitoring is important for a production-ready ML model as it allows us track model behavior after deployment.</p>
+<p>Monitoring would improve the longevity of the ML model by detecting issues including data drift or unexpected changes in inputs. By tracking various performance metrics we can identify when the model no longer performs as it should. </p>
+<p>Ideally we would have set up logging on inference metrics and have some system set up such that we could visualize them. Then we could configure some automated alerts that would notify us (ensuring that we have the right amount of alerts).</p>
 <h2>Overall discussion of project</h2>
 <blockquote>
 <p>In the following section we would like you to think about the general structure of your project.</p>
@@ -446,7 +468,7 @@ We performed load testing of our API using Locust. The load testing script is de
 <em>implemented using ...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>BRandon</p>
+<p>We did not implement additional features other that what was covered in the course. </p>
 <h3>Question 29</h3>
 <blockquote>
 <p><strong>Include a figure that describes the overall architecture of your system and what services that you make use of.</strong>
@@ -459,6 +481,13 @@ We performed load testing of our API using Locust. The load testing script is de
 <p>Answer:</p>
 </blockquote>
 <p>'<img alt="wandb" src="figures/Flow.png" />'</p>
+<p>The starting point of our system is the local development environment, where we prioritize reproducibility and code quality. We manage dependencies using uv and a uv.lock file and version control our data with DVC. To ensure consistent coding standards, we integrated pre-commit hooks that automatically check and format our code using ruff before any commit is made. We also integrated Weights &amp; Biases (W&amp;B) directly into our training script, allowing us to track metrics and debug experiments locally before scaling up to the cloud.
+When code is committed and pushed to GitHub, it triggers our Continuous Integration (CI) pipeline via GitHub Actions. This runs static analysis (ruff, mypy) and unit tests (pytest) to verify system integrity.
+Upon successful testing on the main branch, Google Cloud Build is triggered to orchestrate the cloud workflow:
+It builds the Docker image using train.dockerfile and pushes it to the Google Artifact Registry.
+It executes a training job on Compute Engine resources. The WANDB_API_KEY is securely injected from Secret Manager, enabling the cloud job to log results to the same W&amp;B project used in development.
+For deployment, we utilize a FastAPI application for standard inference and have explored BentoML for ONNX-optimized serving. All model artifacts are stored in Google Cloud Storage, referenced by our Hydra configurations.
+Project workflow visualized in the above figure.</p>
 <h3>Question 30</h3>
 <blockquote>
 <p><strong>Discuss the overall struggles of the project. Where did you spend most time and what did you do to overcome these</strong>
@@ -468,12 +497,9 @@ We performed load testing of our API using Locust. The load testing script is de
 <em>The biggest challenges in the project was using ... tool to do ... . The reason for this was ...</em></p>
 <p>Answer:</p>
 </blockquote>
-<p>Gen org.
-Intial writing of the model (config)
-Testing.
-docker
-version control/drive/kaggle (merge problems, data acquisiton problems)
-GCP</p>
+<p>The most significant struggles in this project centered around the feedback loop latency introduced by working with Docker and the Google Cloud Platform (GCP). Setting up Docker containers was time-consuming, and validating changes in the cloud often meant waiting for long build and deployment cycles. Unlike local development, where errors are instant, diagnosing issues in GCP was difficult due to opaque logs and the time delay between a commit and a failure. This "long feedback loop" forced us to be much more meticulous before triggering a run, as "trial and error" became prohibitively expensive in terms of time.</p>
+<p>Another major pain point was the initial development and configuration phase. Implementing the model and managing its parameters via Hydra was challenging early on, particularly when combined with the need to write tests for code that was not yet mature. Writing unit tests for a codebase that was in constant flux led to friction, as tests would frequently break due to architectural changes rather than actual bugs.</p>
+<p>Finally, we faced organizational challenges typical of early-stage group projects. Initially, team members had divergent visions for the code structure, leading to compatibility issues and merge conflicts. To overcome this, we established strict coding standards and implemented a mandatory PR review process on GitHub. By ensuring every change was reviewed and discussed before merging, and by utilizing automated checks in our CI pipeline, we aligned our workflows. Over time, as the code matured and these standards became habit, the friction decreased significantly, allowing us to focus on optimizing the MLOps pipeline rather than fighting the codebase.</p>
 <h3>Question 31</h3>
 <blockquote>
 <p><strong>State the individual contributions of each team member. This is required information from DTU, because we need to</strong>
@@ -488,4 +514,5 @@ GCP</p>
 <em>We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.</em>
 Answer:</p>
 </blockquote>
-<p>--- question 31 fill here ---</p>
+<p>All group members contributed equally. We often worked in person so that commit number doesn't really reflect who did what and how much they did.
+LLMs were used to udnerstand code, and to generate implementation snippets for new libraries.</p>
