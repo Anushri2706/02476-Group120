@@ -384,7 +384,18 @@ The figure is of our wandb sweep dashboard were different mdetric are visuzalied
 >
 > Answer:
 
-Ansuhri
+We created two separate Docker images to keep the training and inference parts of the project independent:
+1. Dockerfile.train is used for preprocessing the data and training the model.
+2. Dockerfile.api is only used for inference and hosts the trained model through an API.
+
+The dataset is stored in a Google Cloud Storage bucket. From there, it is downloaded for preprocessing, where the data is split into training and validation sets. The processed CSV files are then uploaded back to the same bucket so they can be reused later.
+
+Originally, we planned to use a second storage bucket to store the best trained model and load it dynamically for inference. However, due to time constraints, this was not fully implemented. Instead, the best model is saved locally and copied directly into the API Docker image. This still allows the API to run inference correctly while keeping the training and inference steps clearly separated.
+
+Link to api dockerfile: [API](https://github.com/Anushri2706/02476-Group120/blob/main/dockerfiles/api.dockerfile%20)
+
+To build: Docker build -f dockerfiles/Dockerfile.api api:latest . 
+To run: Docker run api:latest
 
 ### Question 16
 
@@ -419,8 +430,13 @@ Regarding profiling, we did not assume our code was perfect. We implemented a de
 >
 > Answer:
 
-Anushri
-
+We used the following GCP services in our project:
+1. Compute Engine: Used to run virtual machines for development and executing Docker containers during training.
+2. Cloud Storage (Storage Bucket): Used to store the raw dataset as well as the preprocessed CSV files generated after data preprocessing.
+3. Vertex AI: Used to train our machine learning model using managed training infrastructure.
+4. Artifact Registry: Used to store and manage Docker images for both training and inference services.
+5. Cloud Run: Used to deploy and run our containerized inference API in a serverless environment.
+6. Secret Manager: Used to securely store and access sensitive information such as the Weights & Biases (WandB) API key.
 ### Question 18
 
 > **The backbone of GCP is the Compute engine. Explained how you made use of this service and what type of VMs**
@@ -434,7 +450,11 @@ Anushri
 >
 > Answer:
 
-Anushri
+Compute Engine was initially explored during the project to understand how virtual machines (VMs) work in GCP. We created VM instances, such as an e2-medium instance, to experiment with different configurations and see how factors like machine type and region affect pricing and performance.
+
+In the end, Compute Engine was not used in the final setup. Instead, we chose to use more managed services such as Vertex AI for model training and Cloud Run for deploying the inference API. These services allowed us to run our workloads without having to manage VMs manually.
+
+Even though Compute Engine was not part of the final system, using it during the project helped us understand how compute resources are provisioned in GCP and how VMs differ from container-based and serverless solutions. This made it easier for us to choose the services that best fit our project requirements.
 
 ### Question 19
 
@@ -443,7 +463,8 @@ Anushri
 >
 > Answer:
 
-Anushri/Toma
+[Storage Bucket](figures/storagebucket.png)
+[Traffic-Sign-Data](figures/trafficSignData.png)
 
 ### Question 20
 
@@ -452,7 +473,8 @@ Anushri/Toma
 >
 > Answer:
 
-Anushri
+[ArtifactRegistry](figures/ArtifactRegistry.png)
+[Train-Image](figures/TrainImage.png)
 
 ### Question 21
 
@@ -461,7 +483,8 @@ Anushri
 >
 > Answer:
 
-Anushri
+[Build-History](figures/BuildHistory.png)
+[Build-Summary](figures/BuildSummary.png)
 
 ### Question 22
 
@@ -476,7 +499,11 @@ Anushri
 >
 > Answer:
 
-Anushri(sad)
+We were able to partially train our model in the cloud, but we did not manage to complete the full training process using Vertex AI. We successfully built and pushed our containers and ran them using Cloud Run during the build phase. This allowed us to run the data preprocessing in the cloud, where we processed the data and stored the results back in cloud storage.
+
+We also managed to create a custom training job in Vertex AI and set up the required configuration for it. However, we were not able to successfully run the actual model training. We encountered several issues related to secret management and authentication, which caused errors during execution. Since working with Vertex AI and cloud-based training was a new concept for us, it also took a long time to understand how the initial setup and configuration should be done.
+
+Debugging and testing these issues was time-consuming, especially because cloud testing is slower due to network latency. Due to the limited time available for the project, we were not able to fully identify and fix the root cause of the issues, so the final training step remained incomplete.
 
 ## Deployment
 
@@ -632,7 +659,7 @@ Intial writing of the model (config)
 Testing.
 docker
 version control/drive/kaggle (merge problems, data acquisiton problems)
-GCP
+GCP: The biggest struggles in the project were getting everything organized and working with GCP. We spent most of our time trying to set up and configure services like Cloud Run, Vertex AI, IAM roles, and secret management. Since cloud-based MLOps was completely new to us, it took a while to understand how everything should be set up and connected. We also ran into many confusing errors, and testing in the cloud was slow due to long build times and network latency. To handle this, we relied a lot on documentation, tutorials, and testing things step by step.
 
 ### Question 31
 

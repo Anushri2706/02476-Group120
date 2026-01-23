@@ -28,7 +28,7 @@ steps:
     - -t
     - europe-west1-docker.pkg.dev/group-120/mlops-group120/train:latest
     - -f
-    - dockerfiles/train.dockerfile
+    - dockerfiles/Dockerfile.train
     - .
 
 # ------------------------------------------------------------
