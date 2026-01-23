@@ -30,7 +30,6 @@ models/*
 # --- Reports (Ignore generated figures, keep structure) ---
 reports/figures/*
 !reports/figures/.gitkeep
-/data
 /dataset/*
 
 .dvc/config.local
