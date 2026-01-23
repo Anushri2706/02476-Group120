@@ -10,7 +10,7 @@ from pathlib import Path
 import torch.nn.functional as F
 import torch
 # Import your helper function
-from mlops.export_onnx import convert_to_onnx
+from mlops.utils import convert_to_onnx
 
 @bentoml.service
 class ImageClassifierService:
