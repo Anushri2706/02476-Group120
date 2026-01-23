@@ -209,7 +209,7 @@ From the cookiecutter template we have filled out the src/, tests/, models/ fold
 >
 > Answer:
 
-We used ruff format the format our .py files. and also tried to follow the PEP8 styling guide whereever possible (naming classes and functions, line length, etc.).  
+We used ruff to format and lint our .py files which ensures that we maintain a consistent coding style across the project. From our pyproject.toml file, we configured ruff to have a maximum line length of 120 characters. We also tried to follow the PEP8 Python styling guide wherever possible (naming classes and functions, line length, etc.).
 
 These concepts are important in larger projects as it makes it easier for other members in the group to read and understand the code. Furthermore, having consistent formatting and linting ensures that all members of the project follow the same conventions. As a result, collaboration is improved and code reviews are less tedious and more efficient.
 
