@@ -563,9 +563,9 @@ For the test, we used the same load parameters as described in the course: 10 us
 
 We did not implement monitoring of the deployed model. However, implementing monitoring is important for a production-ready ML model as it allows us track model behavior after deployment.
 
+Monitoring would improve the longevity of the ML model by detecting issues including data drift or unexpected changes in inputs. By tracking various performance metrics we can identify when the model no longer performs as it should. 
 
-
-to track how the model behaves with data drift, or given unexpected changes in inputs. If we were to track performance metrics it would be possible to see when the model 
+Ideally we would have set up logging on inference metrics and have some system set up such that we could visualize them. Then we could configure some automated alerts that would notify us (ensuring that we have the right amount of alerts).
 
 ## Overall discussion of project
 
@@ -600,7 +600,7 @@ to track how the model behaves with data drift, or given unexpected changes in i
 >
 > Answer:
 
-BRandon
+We did not implement additional features other that what was covered in the course. 
 
 ### Question 29
 
