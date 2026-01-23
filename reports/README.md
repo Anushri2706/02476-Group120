@@ -194,7 +194,7 @@ In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, 
 >
 > Answer:
 
---- question 5 fill here ---
+From the cookiecutter template we have filled out the src/, tests/, models/ folders. The src/ folder contains the standard files relating to ML coding but also some additional files to test model inference. We do not include a data/ folder in the project directory but instead have a data/ subfolder within src/ where dataset locations, split ratios, and output paths are defined using Hydra. As such, we have a configshydra/ folder containing .yaml configuration files. We also have added a dockerfiles/, wandb/, and outputs/ folder to support containerized workflows, experiment tracking generated using wandb, and to store outputs, respectively.
 
 ### Question 6
 
@@ -209,7 +209,9 @@ In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, 
 >
 > Answer:
 
---- question 6 fill here ---
+We used ruff format the format our .py files. and also tried to follow the PEP8 styling guide whereever possible (naming classes and functions, line length, etc.).  
+
+These concepts are important in larger projects as it makes it easier for other members in the group to read and understand the code. Furthermore, having consistent formatting and linting ensures that all members of the project follow the same conventions. As a result, collaboration is improved and code reviews are less tedious and more efficient.
 
 ## Version control
 
