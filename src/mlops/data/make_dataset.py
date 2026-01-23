@@ -1,14 +1,15 @@
+import logging
 import os
 import shutil
-import logging
 from pathlib import Path
-import pandas as pd
-from sklearn.model_selection import GroupShuffleSplit
+
 import hydra
 import omegaconf
-from omegaconf import DictConfig
+import pandas as pd
 from dotenv import load_dotenv
 from google.cloud import storage
+from omegaconf import DictConfig
+from sklearn.model_selection import GroupShuffleSplit
 
 # Load environment variables from .env file (Create this file in project root!)
 load_dotenv()
@@ -21,7 +22,7 @@ def download_data(cfg: DictConfig) -> Path:
 
     # 1. Setup Paths
     rawData_path = Path(hydra.utils.to_absolute_path(cfg.data.raw_dir))
-    final_path = rawData_path / cfg.data.clean_name
+    final_path = rawData_path
 
     # If data already exists, skip download
     if final_path.exists() and (final_path / "Train.csv").exists():
@@ -62,7 +63,7 @@ def download_data(cfg: DictConfig) -> Path:
     blobs = bucket.list_blobs(prefix=cfg.data.gcs.prefix)
 
     for blob in blobs:
-        if blob.name.endswith('/'):
+        if blob.name.endswith("/"):
             continue  # skip directories
 
         rel_path = Path(blob.name).relative_to(cfg.data.gcs.prefix)

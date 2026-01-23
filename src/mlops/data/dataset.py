@@ -1,10 +1,11 @@
-import torch
-from torch.utils.data import Dataset
-import pandas as pd
 import os
 from pathlib import Path
+
+import pandas as pd
+import torch
 from PIL import Image
 from sklearn.model_selection import GroupShuffleSplit
+from torch.utils.data import Dataset
 
 
 class GTSRB(Dataset):
@@ -31,12 +32,8 @@ class GTSRB(Dataset):
         elif self.mode == "test":
             csv_path = self.processed_dir / "test.csv"
 
-
         df = pd.read_csv(csv_path)
-        self.samples = [
-            (self.raw_dir / p, label)
-            for p, label in zip(df["Path"], df["ClassId"])
-        ]
+        self.samples = [(self.raw_dir / p, label) for p, label in zip(df["Path"], df["ClassId"])]
 
     def __len__(self):
         return len(self.samples)
