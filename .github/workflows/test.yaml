@@ -9,8 +9,11 @@ on:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+    matrix:
+      os: ["ubuntu-latest", "windows-latest", "macos-latest"]
+      python-version: ["3.10", "3.11", "3.12"]
 
     steps:
     - name: Checkout
@@ -19,7 +22,7 @@ jobs:
     - name: Setup uv
       uses: astral-sh/setup-uv@v7
       with:
-        python-version: 3.12
+        python-version: ${{ matrix.python-version }}
         enable-cache: true
         cache-dependency-glob: "uv.lock"
 
