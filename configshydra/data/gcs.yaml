@@ -1,0 +1,4 @@
+    rawbucket: "traffic_sign_data"
+    raw_prefix: "dataset"
+    processed_bucket: "traffic_sign_data"
+    processed_prefix: "processed"
