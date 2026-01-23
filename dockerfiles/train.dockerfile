@@ -15,8 +15,5 @@ ENV PYTHONPATH=/app
 COPY entrypoint.sh ./
 COPY models/latest/best_model.pth models/latest/best_model.pth
 RUN chmod +x ./entrypoint.sh
-#ENTRYPOINT [ "./entrypoint.sh" ]
 
-EXPOSE 8000
-
-CMD ["/bin/bash"]
+ENTRYPOINT ["./entrypoint.sh"]

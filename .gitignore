@@ -36,3 +36,4 @@ reports/figures/*
 .dvc/tmp
 .dvc/cache/files/md5/*
 .dvc/cache/*
+/dataset.tar

@@ -1,6 +1,18 @@
 workerPoolSpecs:
 - machineSpec:
     machineType: n2-standard-16
+
   replicaCount: 1
   containerSpec:
     imageUri: europe-west1-docker.pkg.dev/group-120/mlops-group120/train:latest
+    env:
+      - name: MODEL_BUCKET
+        value: ml-models-group120
+      - name: MODEL_NAME
+        value: train
+      - name: MODEL_VERSION
+        value: latest
+      - name: WANDB_MODE
+        value: online
+      - name: WANDB_SILENT
+        value: "true"

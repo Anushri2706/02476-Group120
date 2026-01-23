@@ -6,14 +6,11 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import wandb
-from hydra.utils import instantiate
-from omegaconf import DictConfig, OmegaConf
-from torch.utils.data import DataLoader
-from torchmetrics import MeanMetric, MetricCollection
-from torchmetrics.classification import MulticlassAccuracy, MulticlassF1Score, MulticlassPrecision, MulticlassRecall
-from torchvision import transforms
+from omegaconf import OmegaConf
+import torch 
+from pathlib import Path
+import gcsfs
 
-# Assuming your GTSRB class is in a file named `dataset.py`
 from .data.dataset import GTSRB
 from .model import TinyCNN
 
@@ -26,19 +23,41 @@ logging.basicConfig(
 )
 
 
+def download(raw_dir: str, local_dir: Path, fs):
+    for f in fs.find(raw_dir): # raw_dir = cfg.cloud.data_gcs.raw_dir 
+        relative = f.replace(raw_dir, "").lstrip("/") 
+        destination = local_dir/ relative
+        destination.parent.mkdir(parents= True, exist_ok = True)
+        fs.get(f, str(destination))
+
 @hydra.main(config_path="../../configshydra", config_name="config", version_base="1.2")
 def main(cfg: DictConfig):
-    # models dir
+
+    Cloud_dir = Path("tmp/data")
+    Cloud_raw_dir = Cloud_dir / "raw"
+    Cloud_processed_dir = Cloud_dir / "processed"
+
+    fs = gcsfs.GCSFileSystem()
+
+    #models dir
     wandb.init(
         project=cfg.wandb.project_name,
         entity=cfg.wandb.team_name,
         # Convert Hydra config to a standard Python dict for W&B
-        config=OmegaConf.to_container(cfg, resolve=True, throw_on_missing=True),
-        job_type="train",
+        config=OmegaConf.to_container(cfg, resolve=True),
+        job_type="train" 
     )
-    model_dir = hydra.utils.to_absolute_path(cfg.paths.models)
+    
+
+    model_dir = hydra.utils.to_absolute_path(cfg.cloud.model_gcs.bucket)
 
     output_dir = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
+
+    download(cfg.cloud.data_gcs.raw_dir, Cloud_raw_dir, fs)
+    download(cfg.cloud.data_gcs.processed_dir, Cloud_processed_dir, fs)
+    log.info("Data downloaded")
+
+
     # 1. Define Transforms
     # We must resize images to the same size so they can be stacked into a batch tensor.
     # make image size configurable
@@ -47,15 +66,15 @@ def main(cfg: DictConfig):
 
     # 2. Initialize Datasets using paths from Hydra config
     train_ds = GTSRB(
-        raw_dir=hydra.utils.to_absolute_path(cfg.data.raw_dir),
-        processed_dir=hydra.utils.to_absolute_path(cfg.data.processed_dir),
+        raw_dir=Cloud_raw_dir,
+        processed_dir=Cloud_processed_dir,
         mode="train",
         transform=transform,
     )
 
     val_ds = GTSRB(
-        raw_dir=hydra.utils.to_absolute_path(cfg.data.raw_dir),
-        processed_dir=hydra.utils.to_absolute_path(cfg.data.processed_dir),
+        raw_dir=Cloud_raw_dir,
+        processed_dir=Cloud_processed_dir,
         mode="val",
         transform=transform,
     )
@@ -163,16 +182,39 @@ def main(cfg: DictConfig):
             checkpoint = {"epoch": epoch, "state_dict": model.state_dict(), "config": cfg, "metric": best_val_loss}
             torch.save(checkpoint, os.path.join(output_dir, "best_model.pth"))
     wandb.finish()
-    # saves after training to 'models/latest' helpful for now but we could eliminate it later
-    best_model_path = os.path.join(output_dir, "best_model.pth")
-    latest_dir = os.path.join(model_dir, "latest")
-    os.makedirs(latest_dir, exist_ok=True)
-    latest_save_path = os.path.join(latest_dir, "best_model.pth")
-    # Load the checkpoint dict
-    checkpoint = torch.load(best_model_path)
-    # Save the checkpoint dict (preserves config)
-    torch.save(checkpoint, latest_save_path)
+    #saves after training to 'models/latest' helpful for now but we could eliminate it later
+    # best_model_path = os.path.join(output_dir, "best_model.pth")
+    # latest_dir = os.path.join(model_dir, "latest")
+    # os.makedirs(latest_dir, exist_ok=True)
+    # latest_save_path = os.path.join(latest_dir, "best_model.pth")
+    # # Load the checkpoint dict
+    # checkpoint = torch.load(best_model_path)
+    # # Save the checkpoint dict (preserves config)
+    # torch.save(checkpoint, latest_save_path)
 
+    # FINAL STEP: UPLOAD TRAINED MODEL TO GCS (MANDATORY)
 
+    log.info("Starting model upload to GCS...")
+
+    local_model_path = "/tmp/model.pth"
+
+    # Save model explicitly
+    torch.save(model.state_dict(), local_model_path)
+
+    client = storage.Client()
+    bucket = client.bucket(cfg.cloud.model_gcs.bucket)
+
+    gcs_dir = f"{cfg.cloud.model_gcs.prefix}/versions/{cfg.cloud.model_gcs.version}"
+    gcs_blob_path = f"{gcs_dir}/model.pth"
+
+    blob = bucket.blob(gcs_blob_path)
+    blob.upload_from_filename(local_model_path)
+
+    if not blob.exists():
+        raise RuntimeError("Model upload to GCS FAILED")
+
+    log.info(f"MODEL UPLOAD SUCCESS: gs://{cfg.cloud.model_gcs.bucket}/{gcs_blob_path}")
+ 
+  
 if __name__ == "__main__":
     main()
