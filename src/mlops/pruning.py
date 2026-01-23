@@ -6,8 +6,11 @@ from .model import TinyCNN
 def load_pruned_model(checkpoint_path: str, num_classes: int, amount: float = 0.3):
     """
     Load TinyCNN and apply unstructured magnitude pruning.
-    Args:
-        amount: fraction of weights to prune
+        Args:
+            amount: fraction of weights to prune
+
+        Returns:
+            pruned_model: TinyCNN model with pruned weights
     """
 
     # Load checkpoint
