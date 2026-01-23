@@ -1,13 +1,14 @@
 defaults:
   - _self_
   - data: gtsrb
+  - model: tinycnn
   - training: trainConf
   - cloud : bucket1
 
-paths: 
+paths:
   models: "models"
 
-ckpt_path: "outputs/2026-01-20/11-34-20/best_model.pth"
+ckpt_path: "models/latest/best_model.pth"
 figures_path: "reports/figures"
 image_size: [64, 64]
 

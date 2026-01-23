@@ -1,15 +1,10 @@
-import hydra
-from omegaconf import DictConfig
-from torch.utils.data import DataLoader
-from torchvision import transforms
-import torch
-import torch.optim as optim
-import torch.nn as nn
 import logging
 import os
-from hydra.utils import instantiate
-from torchmetrics import MetricCollection, MeanMetric
-from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall, MulticlassF1Score
+
+import hydra
+import torch
+import torch.nn as nn
+import torch.optim as optim
 import wandb
 from omegaconf import OmegaConf
 import torch 
@@ -46,7 +41,7 @@ def main(cfg: DictConfig):
 
     #models dir
     wandb.init(
-        project=cfg.wandb.project_name, 
+        project=cfg.wandb.project_name,
         entity=cfg.wandb.team_name,
         # Convert Hydra config to a standard Python dict for W&B
         config=OmegaConf.to_container(cfg, resolve=True),
@@ -65,7 +60,7 @@ def main(cfg: DictConfig):
 
     # 1. Define Transforms
     # We must resize images to the same size so they can be stacked into a batch tensor.
-    #make image size configurable
+    # make image size configurable
     image_size = tuple(cfg.image_size)
     transform = transforms.Compose([transforms.Resize(image_size), transforms.ToTensor()])
 
@@ -90,7 +85,6 @@ def main(cfg: DictConfig):
 
     val_loader = DataLoader(val_ds, batch_size=cfg.training.batch_size, shuffle=False, num_workers=0, pin_memory=True)
 
-
     # --- Verification (Optional) ---
     log.info(f"Train Dataset size: {len(train_ds)}")
     log.info(f"Validation Dataset size: {len(val_ds)}")
@@ -102,35 +96,36 @@ def main(cfg: DictConfig):
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    #model = TinyCNN(num_classes=cfg.data.num_classes).to(device)
+    # model = TinyCNN(num_classes=cfg.data.num_classes).to(device)
     model = instantiate(cfg.model).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = instantiate(cfg.training.optimizer, params=model.parameters())
     epochs = cfg.training.epochs
     best_val_loss = None
-    
+
     log.info(f"Starting training for {epochs} epochs on device: {device}")
     log.info("Training configuration:\n" + OmegaConf.to_yaml(cfg.training, resolve=True))
     log.info("Model configuration:\n" + OmegaConf.to_yaml(cfg.model, resolve=True))
 
-
     num_classes = cfg.data.num_classes
-    metrics_template = MetricCollection({
-        'Accuracy': MulticlassAccuracy(num_classes=cfg.data.num_classes, average='micro'),
-        'Precision': MulticlassPrecision(num_classes=cfg.data.num_classes, average='macro'),
-        'Recall': MulticlassRecall(num_classes=cfg.data.num_classes, average='macro'),
-        'F1': MulticlassF1Score(num_classes=cfg.data.num_classes, average='macro')
-    })
-    #clone the template to create to separate buckets for train and val so that they dont contaminate eachother
-    train_metrics = metrics_template.clone(prefix='train_').to(device)
-    val_metrics = metrics_template.clone(prefix='val_').to(device)
+    metrics_template = MetricCollection(
+        {
+            "Accuracy": MulticlassAccuracy(num_classes=cfg.data.num_classes, average="micro"),
+            "Precision": MulticlassPrecision(num_classes=cfg.data.num_classes, average="macro"),
+            "Recall": MulticlassRecall(num_classes=cfg.data.num_classes, average="macro"),
+            "F1": MulticlassF1Score(num_classes=cfg.data.num_classes, average="macro"),
+        }
+    )
+    # clone the template to create to separate buckets for train and val so that they dont contaminate eachother
+    train_metrics = metrics_template.clone(prefix="train_").to(device)
+    val_metrics = metrics_template.clone(prefix="val_").to(device)
     train_loss_metric = MeanMetric().to(device)
     val_loss_metric = MeanMetric().to(device)
 
     for epoch in range(epochs):
         model.train()
         log.info(f"Starting Epoch {epoch + 1}/{epochs}")
-        
+
         total_batches = len(train_loader)
         for batch_idx, (img, labels) in enumerate(train_loader, 1):
             img, labels = img.to(device), labels.to(device)
@@ -146,7 +141,7 @@ def main(cfg: DictConfig):
 
         with torch.no_grad():
             for img, labels in val_loader:
-                img, labels = img.to(device), labels.to(device) 
+                img, labels = img.to(device), labels.to(device)
                 outputs = model(img)
                 val_loss = criterion(outputs, labels)
                 val_loss_metric.update(val_loss)
@@ -170,7 +165,9 @@ def main(cfg: DictConfig):
         # Log everything at once
         wandb.log(log_dict)
 
-        log.info(f"Epoch {epoch} | Train Loss: {tr_loss:.4f} Acc: {tr_metrics['train_Accuracy']:.2%} | Val Loss: {vl_loss:.4f} Acc: {vl_metrics['val_Accuracy']:.2%}")
+        log.info(
+            f"Epoch {epoch} | Train Loss: {tr_loss:.4f} Acc: {tr_metrics['train_Accuracy']:.2%} | Val Loss: {vl_loss:.4f} Acc: {vl_metrics['val_Accuracy']:.2%}"
+        )
 
         # Reset metrics for next epoch
         train_metrics.reset()
@@ -180,14 +177,9 @@ def main(cfg: DictConfig):
 
         if best_val_loss is None or vl_loss <= best_val_loss:
             best_val_loss = vl_loss
-            #save with additional info because we may change the architecture of the model at 
-            #some point and to open this this model we need to intialize the model as it was saved.
-            checkpoint = {
-                'epoch': epoch,
-                'state_dict': model.state_dict(),
-                'config': cfg, 
-                'metric': best_val_loss
-            }
+            # save with additional info because we may change the architecture of the model at
+            # some point and to open this this model we need to intialize the model as it was saved.
+            checkpoint = {"epoch": epoch, "state_dict": model.state_dict(), "config": cfg, "metric": best_val_loss}
             torch.save(checkpoint, os.path.join(output_dir, "best_model.pth"))
     wandb.finish()
     #saves after training to 'models/latest' helpful for now but we could eliminate it later

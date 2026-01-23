@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY pyproject.toml uv.lock README.md ./
 COPY src src/
-COPY tasks.py . 
+COPY tasks.py .
 COPY configshydra configshydra/
 COPY tests/performancetests/locustfile.py tests/performancetests/locustfile.py/
 
@@ -13,6 +13,7 @@ RUN --mount=type=cache,target=/root/.cache/uv uv sync
 
 ENV PYTHONPATH=/app
 COPY entrypoint.sh ./
+COPY models/latest/best_model.pth models/latest/best_model.pth
 RUN chmod +x ./entrypoint.sh
 
 ENTRYPOINT ["./entrypoint.sh"]

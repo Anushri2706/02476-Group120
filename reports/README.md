@@ -71,28 +71,28 @@ will check the repositories and the code to verify your answers.
 * [x] Use profiling to optimize your code (M12)
 * [x] Use logging to log important events in your code (M14)
 * [x] Use Weights & Biases to log training progress and other important metrics/artifacts in your code (M14)
-* [EASY] Consider running a hyperparameter optimization sweep (M14)
+* [x] Consider running a hyperparameter optimization sweep (M14)
 * [ ] Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15)
 
 ### Week 2
 
-* [EASY] Write unit tests related to the data part of your code (M16)
-* [EASY] Write unit tests related to model construction and or model training (M16)
-* [EASY] Calculate the code coverage (M16)
+* [x] Write unit tests related to the data part of your code (M16)
+* [x] Write unit tests related to model construction and or model training (M16)
+* [x] Calculate the code coverage (M16)
 * [x] Get some continuous integration running on the GitHub repository (M17)
-* [EASY] Add caching and multi-os/python/pytorch testing to your continuous integration (M17)
-* [EASY] Add a linting step to your continuous integration (M17)
-* [EASY] Add pre-commit hooks to your version control setup (M18)
-* [TODO] Add a continues workflow that triggers when data changes (M19)
-* [TODO] Add a continues workflow that triggers when changes to the model registry is made (M19)
+* [x-] Add caching and multi-os/python/pytorch testing to your continuous integration (M17)
+* [x] Add a linting step to your continuous integration (M17)
+* [x] Add pre-commit hooks to your version control setup (M18)
+* [] Add a continues workflow that triggers when data changes (M19)
+* [] Add a continues workflow that triggers when changes to the model registry is made (M19)
 * [x] Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21)
-* [EASY] Create a trigger workflow for automatically building your docker images (M21)
+* [x] Create a trigger workflow for automatically building your docker images (M21)
 * [TODO] Get your model training in GCP using either the Engine or Vertex AI (M21)
-* [TODO] Create a FastAPI application that can do inference using your model (M22)
+* [x] Create a FastAPI application that can do inference using your model (M22)
 * [TODO] Deploy your model in GCP using either Functions or Run as the backend (M23)
-* [TODO] Write API tests for your application and setup continues integration for these (M24)
-* [TODO] Load test your application (M24)
-* [TODO] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)
+* [x] Write API tests for your application and setup continues integration for these (M24)
+* [x] Load test your application (M24)
+* [x] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)
 * [TODO] Create a frontend for your API (M26)
 
 ### Week 3
@@ -105,7 +105,7 @@ will check the repositories and the code to verify your answers.
 * [ ] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
 * [ ] If applicable, optimize the performance of your data loading using distributed data loading (M29)
 * [ ] If applicable, optimize the performance of your training pipeline by using distributed training (M30)
-* [ ] Play around with quantization, compilation and pruning for you trained models to increase inference speed (M31)
+* [x] Play around with quantization, compilation and pruning for you trained models to increase inference speed (M31)
 
 ### Extra
 
@@ -178,7 +178,7 @@ Create and sync the virtual environment from the lock file: uv sync
 Activate it: source .venv/bin/activate
 Verify: python -V and uv pip list
 
-In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, guaranteeing the same resolved set. If dev-only tools are grouped, run uv sync --group dev to include them. 
+In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, guaranteeing the same resolved set. If dev-only tools are grouped, run uv sync --group dev to include them.
 
 ### Question 5
 
@@ -194,7 +194,7 @@ In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, 
 >
 > Answer:
 
---- question 5 fill here ---
+From the cookiecutter template we have filled out the src/, tests/, models/ folders. The src/ folder contains the standard files relating to ML coding but also some additional files to test model inference. We do not include a data/ folder in the project directory but instead have a data/ subfolder within src/ where dataset locations, split ratios, and output paths are defined using Hydra. As such, we have a configshydra/ folder containing .yaml configuration files. We also have added a dockerfiles/, wandb/, and outputs/ folder to support containerized workflows, experiment tracking generated using wandb, and to store outputs, respectively.
 
 ### Question 6
 
@@ -209,7 +209,9 @@ In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, 
 >
 > Answer:
 
---- question 6 fill here ---
+We used ruff to format and lint our .py files which ensures that we maintain a consistent coding style across the project. From our pyproject.toml file, we configured ruff to have a maximum line length of 120 characters. We also tried to follow the PEP8 Python styling guide wherever possible (naming classes and functions, line length, etc.).
+
+These concepts are important in larger projects as it makes it easier for other members in the group to read and understand the code. Furthermore, having consistent formatting and linting ensures that all members of the project follow the same conventions. As a result, collaboration is improved and code reviews are less tedious and more efficient.
 
 ## Version control
 
@@ -228,7 +230,13 @@ In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, 
 >
 > Answer:
 
---- question 7 fill here ---
+We have implemented 7 tests across three modules to ensure the reliability of our application.
+
+For the data module (test_data.py), we have 3 tests that verify the dataset class can correctly load data, checks the properties of the loaded data (like length and content), and handles missing files gracefully.
+
+For the model (test_model.py), we have a parameterized test that validates the model's forward pass. It checks that for different batch sizes (a single image and a full batch), the output tensor has the correct shape and data type.
+
+For the API (test_api.py), we have 3 tests: one checks the /cv_model/ endpoint with a valid PNG image, another verifies the behavior when no file is provided, and the last tests the response to a non-image file.
 
 ### Question 8
 
@@ -243,7 +251,7 @@ In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, 
 >
 > Answer:
 
---- question 8 fill here ---
+Even with 100% code coverage, the code would not be guaranteed error free. Coverage only says every line ran at least once, not that the tests used meaningful assertions, covered edge cases, or validated behavior under realistic conditions and failure scenarios. Logic bugs, integration issues, and unexpected inputs can still slip through if tests are shallow. In our project, the model tests reach 100% coverage, the data tests reach 90%, and the API tests reach 40%, which gives some confidence but still leaves space for untested paths and subtle bugs.
 
 ### Question 9
 
@@ -258,7 +266,8 @@ In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, 
 >
 > Answer:
 
---- question 9 fill here ---
+We made use of both branches and PRs in our project. Every time we wanted to develop a new feature, we pulled the most recent version of the main branch on the remote repo, developed our feature and then pushed the changes. Subsequently, a pull request was opened and a reviewer was assigned to look at the changes. The repo rules were configured in such a way that a merge to main was impossible without a review. In the case of merge conflicts, they were resolved on the github web editor. In general, we encountered only minor merge conflicts by communicating with each other and creating feature branches that made changes in a highly localized region of the codebase.
+
 
 ### Question 10
 
@@ -273,7 +282,11 @@ In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, 
 >
 > Answer:
 
---- question 10 fill here ---
+We used DVC for managing data in our project. Initially, we set up DVC with Google Drive as the remote storage. This allowed us to version control our data efficiently by creating small metafiles that pointed to the actual data stored remotely. We used commands like dvc init to initialize DVC in our repository, dvc remote add to configure Google Drive as the remote storage, and dvc add to track our dataset. This setup ensured that our data was not stored in the Git repository, avoiding large file issues, while still allowing us to track changes and share data easily.
+
+Although we did not make changes to the data during the project, DVC would be useful in scenarios where data evolves, such as adding new samples or modifying preprocessing steps. By using dvc push and dvc pull, we ensured that all team members could access the same version of the data, improving collaboration and reproducibility.
+
+
 
 ### Question 11
 
@@ -290,7 +303,11 @@ In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, 
 >
 > Answer:
 
---- question 11 fill here ---
+We have organized our continuous integration (CI) setup into three separate workflow files to ensure code quality, proper formatting, and functionality.
+First, our Code Check workflow (see codecheck.yaml) handles static analysis. It uses ruff for both code quality checks and formatting verification, and mypy for type checking. Secondly, we have a Pre-commit CI workflow (see pre_commit.yaml) that runs pre-commit hooks on every push and pull request, automatically committing fixes if necessary. Finally, our Run tests workflow (test.yaml) is responsible for running unit tests using pytest (see more about these tests in the following sections) and, upon success, submitting a build to Google Cloud Build using gcloud. We note that for our pre-commit workflow, we configured it so that if some tests fail during the pre-commit checks, it will continue to the next steps. For instance, if there are formatting errors, the action should continue to the formatting step.
+We currently run all jobs on the ubuntu-latest operating system and specifically use Python version 3.12. We do not currently test a list of multiple operating systems or Python versions. We utilize caching to speed up our workflows; specifically, we use the astral-sh/setup-uv action to enable caching for our dependencies (uv.lock), and we also explicitly cache .mypy_cache to improve the performance of our type checking steps.
+https://github.com/Anushri2706/02476-Group120/actions 
+
 
 ## Running code and tracking experiments
 
@@ -309,7 +326,10 @@ In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, 
 >
 > Answer:
 
---- question 12 fill here ---
+We used Hydra for configuration management, with our main config at configshydra/config.yaml composing sub-configs for data, model, and training. We made the model and optimizer configurable by defining their specific Python object targets (e.g., _target_) in the YAML files, allowing dynamic instantiation. To run an experiment with overrides, we use the command line:
+python -m src.mlops.train training.optimizer.lr=0.001 training.batch_size=32
+
+We also save the full configuration dictionary inside the model checkpoint (.pth). This ensures we always initialize the correct model architecture when loading weights, even if local config files have changed.
 
 ### Question 13
 
@@ -324,7 +344,7 @@ In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, 
 >
 > Answer:
 
---- question 13 fill here ---
+We secured the reproducibility of our experiments by strictly controlling our environment, data, and configurations. We used uv combined with a uv.lock file to pin all dependency versions, ensuring that our Docker containers utilize the exact same Python environment everywhere. To prevent data inconsistencies, we employed DVC to version control our datasets, making the exact training data trackable. Regarding experiment tracking, we used Hydra and Weights & Biases to log the complete resolved configuration for every training run. Crucially, we saved this configuration alongside our model checkpoint (best_model.pth), which allows us to reload the exact model architecture and settings used during training. Additionally, we ensured determinism in our pipeline by setting fixed random states for random operations like  data splitting.
 
 ### Question 14
 
@@ -341,7 +361,15 @@ In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, 
 >
 > Answer:
 
---- question 14 fill here ---
+'![wandb](figures/wandb.png)'
+We used Weights & Biases to track our experiments and visualize performance. As seen in the training script, we logged the following metrics for both training and validation sets:
+ Loss (CrossEntropyLoss): This is our primary objective function. Tracking both training and validation loss allows us to monitor convergence and identify overfitting (e.g., if validation loss begins to increase while training loss decreases).
+Accuracy: This gives us a high-level overview of the model's correct predictions.
+Precision, Recall, and F1 Score: Since the GTSRB dataset contains multiple classes which may be imbalanced, these metrics provide a more nuanced view of performance than simple accuracy, ensuring the model performs well across all traffic sign types.
+To optimize our model, we ran a hyperparameter sweep using wandb sweep (defined in sweep.yaml) where we varied training.optimizer.lr and model.dropout. As shown in the attached figure, our limited sweep suggested that adding dropout had a generally negative effect on model performance for this architecture. Conversely, we observed a slight correlation between a higher learning rate and increased validation accuracy, although the search space was not exhaustive.
+
+The figure is of our wandb sweep dashboard were different mdetric are visuzalied for the models run during the sweep. A summary bar chart is useful for understanding the influence of the hyperparameters on val accuracy (one single metric)
+
 
 ### Question 15
 
@@ -371,7 +399,10 @@ In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, 
 >
 > Answer:
 
---- question 16 fill here ---
+Debugging strategies varied among team members. We primarily relied on logging to track variable states and breakpoints for interactive inspection. To accelerate debugging cycles, specifically for testing pipelines that run after training, we often reduced the dataset size or trained for a single epoch to bypass long training times. We also utilized pair programming (a "rubber duck" approach), where one member wrote code while others reviewed logic in real-time to catch errors early.
+
+Regarding profiling, we did not assume our code was perfect. We implemented a dedicated benchmarking script (src/mlops/benchmarking.py) to profile our model's inference performance. This script measures and compares inference latency and model size across different optimization techniques, specifically testing standard, pruned, and quantized versions of the model. This allowed us to quantitatively assess the speedups and compression rates achieved, rather than relying on assumptions.
+
 
 ## Working in the cloud
 
@@ -462,7 +493,17 @@ In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, 
 >
 > Answer:
 
---- question 23 fill here ---
+We did manage to write an API for our model using FastAPI. The API is designed to handle image classification tasks.
+
+First, the API accepts an image file through a POST request to the /cv_model/ endpoint. The image is uploaded as a file and read into memory.
+
+During the API's initialization, the latest trained model is loaded. The model's configuration and weights are retrieved from a checkpoint file (best_model.pth) stored in the latest directory. Hydra is used to manage the configuration, ensuring that the model is instantiated with the correct architecture and parameters.
+
+The uploaded image is preprocessed to match the input size expected by the model. This includes resizing the image to the dimensions specified in the model's configuration and converting it into a tensor.
+
+The preprocessed image is passed through the model to generate predictions. The model outputs class probabilities, and the API extracts the class with the highest probability.
+
+The API returns a JSON response containing the predicted class, the associated probability, and the filename of the uploaded image. If the model is not loaded or an error occurs, the API returns an appropriate error message.
 
 ### Question 24
 
@@ -478,7 +519,11 @@ In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, 
 >
 > Answer:
 
---- question 24 fill here ---
+We managed to deploy our API locally but were unable to deploy it in the cloud because we could not run the model in the cloud. For deployment, we implemented the API in Docker. We created a Docker image containing the API endpoint, which is defined in api.py. The Dockerfile for the API ensures that all dependencies are installed, and the FastAPI application is properly configured.
+
+Once the Docker image was built, we ran the container locally to serve the API. The API could then be invoked by sending a POST request to the /cv_model/ endpoint. To simplify the process, we implemented a task in tasks.py that allows us to run the API container with a single command. For example, the inv api task runs "uv run uvicorn src.{PROJECT_NAME}.api:app --host 0.0.0.0 --port 8000 --reload".
+
+This setup allowed us to test the API locally in a containerized environment, ensuring consistency and reproducibility. However, since we could not deploy the model in the cloud, we were unable to test the API in a cloud environment.
 
 ### Question 25
 
@@ -493,7 +538,12 @@ In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, 
 >
 > Answer:
 
---- question 25 fill here ---
+We performed both unit and load testing of our API.
+
+For unit testing, we used pytest and FastAPI's TestClient. The tests in test_api.py include validating the /cv_model/ endpoint with a valid PNG image to ensure proper handling of requests, verifying a 422 error for missing files, and testing non-image payloads to confirm graceful error handling. Since the model is not loaded in the test environment, we also confirmed that the API returns a 500 status code and an appropriate error message ("Model not loaded. Check server logs.") when the model is unavailable.
+We performed load testing of our API using Locust. The load testing script is defined in locustfile.py, where we simulate multiple users sending POST requests to the /cv_model/ endpoint with randomly generated 64x64 PNG images. The TARGET_HOST environment variable allows us to dynamically specify the API's host during testing.
+
+For the test, we used the same load parameters as described in the course: 10 users with a ramp-up rate of 1 user per second and a total runtime of 1 minute. The results showed that the API handled all requests successfully without any failures.
 
 ### Question 26
 
