@@ -10,6 +10,7 @@ import omegaconf
 from omegaconf import DictConfig
 from dotenv import load_dotenv
 from google.cloud import storage
+import gcsfs
 
 load_dotenv()
 
@@ -76,11 +77,11 @@ log = logging.getLogger(__name__)
 #     return data_gcs_bucket_Path
 
 
-def split_data(data_path: Path, output_dir: Path, cfg: DictConfig):
+def split_data(data_path: Path, output_dir: Path, bucket_name, cfg: DictConfig):
     """Reads raw data, performs GroupShuffleSplit, and saves to processed."""
 
-    train_csv_path = os.path.join(data_path, "Train.csv")
-    test_csv_path = os.path.join(data_path, "Test.csv")
+    train_csv_path = f"gs://{bucket_name}/{cfg.cloud.data_gcs.raw_dir}/Train.csv"
+    test_csv_path = f"gs://{bucket_name}/{cfg.cloud.data_gcs.raw_dir}/Test.csv"
 
     # if not train_csv_path.exists():
     #     raise FileNotFoundError(f"Train.csv not found in {data_path}")
@@ -101,6 +102,7 @@ def split_data(data_path: Path, output_dir: Path, cfg: DictConfig):
     val_df = df.iloc[val_idx]
     log.info("Data split complete.")
     # 3. Save
+    output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     train_save_path = os.path.join(output_dir, "train_split.csv")
@@ -116,22 +118,37 @@ def split_data(data_path: Path, output_dir: Path, cfg: DictConfig):
     log.info(f"Saved splits to {output_dir}")
     log.info(f"Train: {len(train_df)} | Val: {len(val_df)}")
 
-def upload_processed_data(bucket_name, PATH_raw, DIR_processed, cfg: DictConfig):
-    log.info("UPLOADING PROCESSED DATA TO GCS")
+# def upload_processed_data(bucket_name, PATH_raw, DIR_processed, cfg: DictConfig):
+#     log.info("UPLOADING PROCESSED DATA TO GCS")
 
-    client = storage.Client.create_anonymous_client()
-    bucket_obj = client.bucket(bucket_name)
+#     client = storage.Client.create_anonymous_client()
+#     bucket_obj = client.bucket(bucket_name)
 
-    files = list(PATH_raw.glob("*.csv"))
-    if not files:
-        raise RuntimeError(f"No processed CSV files found in {PATH_raw}")
+#     files = list(PATH_raw.glob("*.csv"))
+#     # if not files:
+#     #     raise RuntimeError(f"No processed CSV files found in {PATH_raw}")
     
+#     for file in files:
+#         blob_path = f"{DIR_processed}/{file.name}"
+#         bucket_obj.blob(blob_path).upload_from_filename(file)
+#         log.info(f"Uploaded {file.name} → gs://{bucket_name}/{blob_path}")
+
+def upload_processed_data(bucket_name, local_dir, gcs_dir, cfg=DictConfig):
+    log.info("UPLOADING PROCESSED DATA TO GCS (via gcsfs)")
+
+    local_dir = Path(local_dir)
+    fs = gcsfs.GCSFileSystem()  
+
+    files = list(local_dir.glob("*.csv"))
+    if not files:
+        raise RuntimeError(f"No processed CSV files found in {local_dir}")
+
     for file in files:
-        blob_path = f"{DIR_processed}/{file.name}"
-        bucket_obj.blob(blob_path).upload_from_filename(file)
-        log.info(f"Uploaded {file.name} → gs://{bucket_name}/{blob_path}")
+        gcs_path = f"{bucket_name}/{gcs_dir}/{file.name}"
 
+        fs.put(str(file), gcs_path, overwrite=True)
 
+        log.info(f"Uploaded {file.name} → gs://{gcs_path}")
 
 
 # def upload_processed_data(local_dir: Path, cfg: DictConfig):
@@ -164,17 +181,18 @@ def main(cfg: DictConfig):
     PATH_bucket = Path(hydra.utils.to_absolute_path(cfg.cloud.data_gcs.bucket)) #Bucket path 
     
     DIR_raw = cfg.cloud.data_gcs.raw_dir
-    PATH_raw = os.path.join(PATH_bucket, DIR_raw)
+    PATH_raw = Path(os.path.join(PATH_bucket, DIR_raw))
 
     DIR_processed = cfg.cloud.data_gcs.processed_dir
-    PATH_processed = os.path.join(PATH_bucket, DIR_processed)
+    PATH_processed = Path(os.path.join(PATH_bucket, DIR_processed))
 
 
     # print(omegaconf.OmegaConf.to_yaml(cfg))
     # 1. Download & Clean Path
-    split_data(PATH_raw, PATH_processed, cfg)
+    split_data(PATH_raw, PATH_processed, bucket_name, cfg)
 
-    upload_processed_data(bucket_name= bucket_name, PATH_raw= PATH_raw, DIR_processed= DIR_processed, cfg= cfg)
+    upload_processed_data(bucket_name=bucket_name,local_dir=PATH_processed, gcs_dir=DIR_processed,cfg=cfg)
+
 
 
 
