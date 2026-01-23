@@ -230,7 +230,13 @@ These concepts are important in larger projects as it makes it easier for other 
 >
 > Answer:
 
---- question 7 fill here ---
+We have implemented 7 tests across three modules to ensure the reliability of our application.
+
+For the data module (test_data.py), we have 3 tests that verify the dataset class can correctly load data, checks the properties of the loaded data (like length and content), and handles missing files gracefully.
+
+For the model (test_model.py), we have a parameterized test that validates the model's forward pass. It checks that for different batch sizes (a single image and a full batch), the output tensor has the correct shape and data type.
+
+For the API (test_api.py), we have 3 tests: one checks the /cv_model/ endpoint with a valid PNG image, another verifies the behavior when no file is provided, and the last tests the response to a non-image file.
 
 ### Question 8
 
@@ -245,7 +251,7 @@ These concepts are important in larger projects as it makes it easier for other 
 >
 > Answer:
 
---- question 8 fill here ---
+Even with 100% code coverage, the code would not be guaranteed error free. Coverage only says every line ran at least once, not that the tests used meaningful assertions, covered edge cases, or validated behavior under realistic conditions and failure scenarios. Logic bugs, integration issues, and unexpected inputs can still slip through if tests are shallow. In our project, the model tests reach 100% coverage, the data tests reach 90%, and the API tests reach 40%, which gives some confidence but still leaves space for untested paths and subtle bugs.
 
 ### Question 9
 
@@ -275,7 +281,11 @@ These concepts are important in larger projects as it makes it easier for other 
 >
 > Answer:
 
---- question 10 fill here ---
+We used DVC for managing data in our project. Initially, we set up DVC with Google Drive as the remote storage. This allowed us to version control our data efficiently by creating small metafiles that pointed to the actual data stored remotely. We used commands like dvc init to initialize DVC in our repository, dvc remote add to configure Google Drive as the remote storage, and dvc add to track our dataset. This setup ensured that our data was not stored in the Git repository, avoiding large file issues, while still allowing us to track changes and share data easily.
+
+Although we did not make changes to the data during the project, DVC would be useful in scenarios where data evolves, such as adding new samples or modifying preprocessing steps. By using dvc push and dvc pull, we ensured that all team members could access the same version of the data, improving collaboration and reproducibility.
+
+
 
 ### Question 11
 
