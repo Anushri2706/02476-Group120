@@ -16,12 +16,14 @@ def load_inference_model(
     Load TinyCNN for inference with optional pruning and quantization.
     Return model ready for inference on CPU.
 
-    Args:
-        checkpoint_path: Path to trained model checkpoint (.pth)
-        num_classes: Number of output classes
-        prune_amount: Fraction of weights to prune (e.g. 0.3), or None
-        quantized: Whether to apply dynamic quantization
-
+        Args:
+            checkpoint_path: Path to trained model checkpoint (.pth)
+            num_classes: Number of output classes
+            prune_amount: Fraction of weights to prune (e.g. 0.3), or None
+            quantized: Whether to apply dynamic quantization
+        
+        Returns:
+            Inference-ready model
     """
 
     # Load base model
@@ -53,10 +55,12 @@ def predict(model: nn.Module, x: torch.Tensor) -> torch.Tensor:
     """
     Run inference on a batch of inputs and returns model logits.
 
-    Args:
-        model: Inference-ready model
-        x: Input tensor
+        Args:
+            model: Inference-ready model
+            x: Input tensor
 
+        Returns:
+            Model logits
     """
     with torch.inference_mode():
         return model(x)

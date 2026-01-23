@@ -3,6 +3,7 @@ defaults:
   - data: gtsrb
   - model: tinycnn
   - training: trainConf
+  - cloud : bucket1
 
 paths:
   models: "models"
@@ -14,8 +15,3 @@ image_size: [64, 64]
 wandb:
   project_name: "gtsrb_classification"
   team_name: "5m"
-
-data:
-  gcs:
-    bucket: "traffic_sign_data"
-    prefix: "dataset"

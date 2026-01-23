@@ -28,7 +28,6 @@ models/*
 .ruff_cache/
 .mypy_cache/
 # --- Reports (Ignore generated figures, keep structure) ---
-reports/figures/*
 !reports/figures/.gitkeep
 /dataset/*
 
@@ -36,3 +35,4 @@ reports/figures/*
 .dvc/tmp
 .dvc/cache/files/md5/*
 .dvc/cache/*
+/dataset.tar
