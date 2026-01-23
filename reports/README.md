@@ -561,7 +561,11 @@ For the test, we used the same load parameters as described in the course: 10 us
 >
 > Answer:
 
-Brandon
+We did not implement monitoring of the deployed model. However, implementing monitoring is important for a production-ready ML model as it allows us track model behavior after deployment.
+
+
+
+to track how the model behaves with data drift, or given unexpected changes in inputs. If we were to track performance metrics it would be possible to see when the model 
 
 ## Overall discussion of project
 
