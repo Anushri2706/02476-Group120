@@ -194,7 +194,7 @@ In containers, the Dockerfiles copy pyproject.toml and uv.lock and run uv sync, 
 >
 > Answer:
 
-From the cookiecutter template we have filled out the src/, tests/, models/ folders. The src/ folder contains the standard files relating to ML coding but also some additional files to test model inference. We do not include a data/ folder in the project directory but instead have a data/ subfolder within src/ where dataset locations, split ratios, and output paths are defined using Hydra. As such, we have a configshydra/ folder containing .yaml configuration files. We also have added a dockerfiles/, wandb/, and outputs/ folder to support containerized workflows, experiment tracking generated using wandb, and to store outputs, respectively.
+From the cookiecutter template we have filled out the src/, tests/ and models/ folders. The src/ folder contains the standard files relating to ML coding but also some additional files to test model inference. We do not include a data/ folder in the project directory but instead have a data/ subfolder within src/ where dataset locations, split ratios, and output paths are defined using Hydra. As such, we have a configshydra/ folder containing .yaml configuration files. We also have added a dockerfiles/, wandb/, and outputs/ folder to support containerized workflows, experiment tracking generated using wandb, and to store outputs, respectively.
 
 ### Question 6
 
@@ -230,14 +230,7 @@ These concepts are important in larger projects as it makes it easier for other 
 >
 > Answer:
 
-We have implemented 7 tests across three modules to ensure the reliability of our application.
-
-For the data module (test_data.py), we have 3 tests that verify the dataset class can correctly load data, checks the properties of the loaded data (like length and content), and handles missing files gracefully.
-
-For the model (test_model.py), we have a parameterized test that validates the model's forward pass. It checks that for different batch sizes (a single image and a full batch), the output tensor has the correct shape and data type.
-
-For the API (test_api.py), we have 3 tests: one checks the /cv_model/ endpoint with a valid PNG image, another verifies the behavior when no file is provided, and the last tests the response to a non-image file.
-
+We implemented 7 tests across three modules to ensure reliability. For the data module (test_data.py), 3 tests verify the dataset class loads correctly, check data properties (length and content), and handle missing files. For the model (test_model.py), a parameterized test validates the forward pass, ensuring correct output shape and type across batch sizes. Finally, for the API (test_api.py), 3 tests check the /cv_model/ endpoint with a valid PNG, no file, and a non-image file.
 ### Question 8
 
 > **What is the total code coverage (in percentage) of your code? If your code had a code coverage of 100% (or close**
@@ -251,7 +244,7 @@ For the API (test_api.py), we have 3 tests: one checks the /cv_model/ endpoint w
 >
 > Answer:
 
-Even with 100% code coverage, the code would not be guaranteed error free. Coverage only says every line ran at least once, not that the tests used meaningful assertions, covered edge cases, or validated behavior under realistic conditions and failure scenarios. Logic bugs, integration issues, and unexpected inputs can still slip through if tests are shallow. In our project, the model tests reach 100% coverage, the data tests reach 90%, and the API tests reach 40%, which gives some confidence but still leaves space for untested paths and subtle bugs.
+We make the point that even with a full (100%) code coverage, the code would not be guaranteed error free. Secondly, he coverage only says every line ran at least once, not that the tests used meaningful assertions, covered edge cases, or validated behavior under realistic conditions and failure scenarios. Logic bugs, integration issues, and unexpected inputs can still slip through if the tests are shallow. In our project, the model tests reach 100% coverage, the data tests reach 90%, and the API tests reach 40%, which gives some confidence but still leaves space for untested paths and subtle bugs.
 
 ### Question 9
 
@@ -464,8 +457,8 @@ Even though Compute Engine was not part of the final system, using it during the
 >
 > Answer:
 
-[Storage Bucket](figures/storagebucket.png)
-[Traffic-Sign-Data](figures/trafficSignData.png)
+'![Storage Bucket](figures/storagebucket.png)'
+'![Traffic-Sign-Data](figures/trafficSignData.png)'
 
 ### Question 20
 
@@ -474,8 +467,8 @@ Even though Compute Engine was not part of the final system, using it during the
 >
 > Answer:
 
-[ArtifactRegistry](figures/ArtifactRegistry.png)
-[Train-Image](figures/TrainImage.png)
+'![ArtifactRegistry](figures/ArtifactRegistry.png)'
+'![Train-Image](figures/TrainImage.png)'
 
 ### Question 21
 
@@ -484,8 +477,8 @@ Even though Compute Engine was not part of the final system, using it during the
 >
 > Answer:
 
-[Build-History](figures/BuildHistory.png)
-[Build-Summary](figures/BuildSummary.png)
+'![Build-History](figures/BuildHistory.png)'
+'![Build-Summary](figures/BuildSummary.png)'
 
 ### Question 22
 
@@ -521,19 +514,19 @@ Debugging and testing these issues was time-consuming, especially because cloud 
 >
 > Answer:
 
-We did manage to write an API for our model using FastAPI. The API is designed to handle image classification tasks.
+We managed to write an API for our model using FastAPI. The API is designed to handle image classification.
 
 First, the API accepts an image file through a POST request to the /cv_model/ endpoint. The image is uploaded as a file and read into memory.
 
 During the API's initialization, the latest trained model is loaded. The model's configuration and weights are retrieved from a checkpoint file (best_model.pth) stored in the latest directory. Hydra is used to manage the configuration, ensuring that the model is instantiated with the correct architecture and parameters.
 
-The uploaded image is preprocessed to match the input size expected by the model. This includes resizing the image to the dimensions specified in the model's configuration and converting it into a tensor.
+The uploaded image is preprocessed to match the input size expected by the model, resizing if necessary and converting to a tensor.
 
 The preprocessed image is passed through the model to generate predictions. The model outputs class probabilities, and the API extracts the class with the highest probability.
 
-The API returns a JSON response containing the predicted class, the associated probability, and the filename of the uploaded image. If the model is not loaded or an error occurs, the API returns an appropriate error message.
+The API returns a JSON response containing the predicted class, the associated probability, and the filename of the uploaded image. If the model is not loaded  an appropriate error message is returned.
 
-On top of the fastAPI, we also made a more ML specific api with ONNX and BentoML. It is also run by invoking a task "inv serve". What is lacking is probably a better way to interact with the API, namely a more user friendly api.
+We also made a more ML specific api with ONNX and BentoML. It is also run by invoking a task "inv serve". 
 
 ### Question 24
 
@@ -612,7 +605,9 @@ Ideally we would have set up logging on inference metrics and have some system s
 >
 > Answer:
 
---- question 27 fill here ---
+We utilized a single shared Google account for the entire group to centralize our resources and billing. In total, we spent approximately $8.47 during the course of the project. The most expensive service was Google Cloud Build combined with Compute Engine, which we used to containerize our application and execute training jobs. Although we did not complete many full training runs, the compute time required for these jobs still constituted the bulk of our expenses.
+
+In general, working in the cloud was a double-edged sword. On one hand, it provided a standardized, reproducible environment that was independent of our local machines. On the other hand, it introduced a significantly longer feedback loop. Debugging errors was more difficult than locally, as we often had to wait for containers to build and jobs to fail before we could inspect the logs, making the "trial and error" process slower and more costly.
 
 ### Question 28
 
@@ -690,5 +685,13 @@ Finally, we faced organizational challenges typical of early-stage group project
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
 
-All group members contributed equally. We often worked in person so that commit number doesn't really reflect who did what and how much they did.
-LLMs were used to udnerstand code, and to generate implementation snippets for new libraries.
+All group members contributed equally.
+A rough outline of the division of labor follows:
+Anushri: Cloud, Docker, CI
+Nicholas: Model, Hydra, CI, API, Wandb
+Jesus: API, Testing, CI, Docker, CLoud
+Brandon: Testing, Model (becnhmarking and fine tuning)
+Toma: Model, Cloud, Hydra
+
+We often worked in person so that the commit number doesn't really reflect who did what and how much they did.
+LLMs were used to understand code, and to generate implementation snippets for new libraries.
